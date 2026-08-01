@@ -137,7 +137,18 @@ def create_app():
         if not msg:
             return jsonify({"error": "empty message"})
         try:
-            result = pipeline.process(msg)
+            # Get history from session
+            history = session.get("chat_history", [])
+            result = pipeline.process(msg, history)
+            
+            # Save to history
+            history.append({"role": "user", "content": msg})
+            response_text = result.get("response", "")
+            if response_text:
+                history.append({"role": "assistant", "content": response_text})
+            # Keep only last 20 messages
+            session["chat_history"] = history[-20:]
+            
             return jsonify(result)
         except Exception as e:
             return jsonify({"error": str(e), "status": "error"})
