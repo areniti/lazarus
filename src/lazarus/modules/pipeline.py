@@ -1,17 +1,8 @@
-"""Lazarus Pipeline - CPU-like architecture for code generation
+"""Lazarus Pipeline - AI-Powered CMS
 
-Flows like a real CPU:
-1. FETCH: understand request + check skills
-2. DECODE: decompose into sub-projects
-3. EXECUTE: for each sub-project (ONE BY ONE, each with own API calls):
-   a. Create file
-   b. Generate code
-   c. Verify with API
-   d. If fails: retry
-4. WRITEBACK: save to disk + update state
-
-Each sub-project = multiple API calls.
-A site with 4 sub-projects = 8+ API calls minimum.
+Lazarus = CMS like WordPress but with AI.
+User describes what they want → AI builds a complete website.
+Output = ONE complete HTML page.
 """
 from .ai import AI
 from .planner import Planner
@@ -22,7 +13,7 @@ from ..core.memory import Memory
 
 
 class Pipeline:
-    """Main pipeline - heavy API usage, quality over speed."""
+    """CMS Pipeline — builds complete websites from descriptions."""
 
     def __init__(self, config=None):
         self.config = config or Config()
@@ -33,14 +24,17 @@ class Pipeline:
         self.memory = Memory()
 
     def process(self, message, history=None):
-        """Full pipeline - many API calls, one by one"""
+        """Build a website from user description."""
         role = self.config.data.get("role", "developer")
         if role == "admin":
-            return {"response": "Admin mode. Use /admin.", "files": [], "status": "admin"}
+            return {"response": "Admin mode.", "files": [], "status": "admin"}
 
-        # Save to memory
         self.memory.save_message("user", message)
         memory_history = self.memory.get_history(limit=10)
+
+        # Edit existing site?
+        if self.ai.needs_edit(message):
+            return self._handle_edit(message)
 
         # Chat or Build?
         if not self.ai.needs_code(message):
@@ -48,102 +42,132 @@ class Pipeline:
             self.memory.save_message("assistant", response)
             return {"response": response, "files": [], "status": "chat"}
 
-        # === BUILD PIPELINE (heavy API usage) ===
-        logs = []
+        # === BUILD: one complete website ===
+        print(f"\n🔨 Building website: {message[:50]}...")
 
-        # STEP 1: Ask which skills are needed
-        print("\n📋 Step 1: Checking skills...")
+        # Step 1: Ask skills
         skills = self.ai.load_skills()
         needed_skills = self.ai.ask_skills(message, skills)
-        logs.append(f"Skills: {needed_skills}")
-        print(f"   Skills needed: {needed_skills}")
+        print(f"   Skills: {needed_skills}")
 
-        # STEP 2: Decompose into sub-projects
-        print("\n📋 Step 2: Decomposing...")
-        sub_projects = self.ai.decompose_with_skills(message, needed_skills)
-        logs.append(f"Sub-projects: {len(sub_projects)}")
-        print(f"   {len(sub_projects)} sub-projects:")
-        for sp in sub_projects:
-            print(f"   - {sp['name']}: {sp.get('description', '')[:60]}")
+        # Step 2: Decompose into sections
+        sections = self.ai.decompose_with_skills(message, needed_skills)
+        print(f"   Sections: {len(sections)}")
+        for s in sections:
+            print(f"   - {s['name']}: {s.get('description', '')[:50]}")
 
-        self.state.start_new_project(message, sub_projects)
+        self.state.start_new_project(message, sections)
 
-        # STEP 3: Execute each sub-project (ONE BY ONE)
-        files_created = []
-        last_output = ""
+        # Step 3: Build each section
+        css_parts = []
+        html_parts = []
 
-        for i, project in enumerate(sub_projects):
-            file_spec = project.get("file", {})
-            filename = file_spec.get("name", f"{project['name']}.html")
-            filepath = self.config.output_dir / filename
-            filepath.parent.mkdir(parents=True, exist_ok=True)
-
-            print(f"\n🔨 Step 3.{i+1}: {project['name']}")
-
-            # Create file FIRST
-            filepath.write_text(f"<!-- {project.get('description', '')} -->", encoding="utf-8")
-            print(f"   📄 File created: {filename}")
-
+        for i, section in enumerate(sections):
+            print(f"\n   [{i+1}/{len(sections)}] {section['name']}...")
             self.state.start_step(i)
 
-            # API call 1: Generate code
-            print(f"   🤖 Generating code...")
+            # Generate
             code = self.ai.generate_code(
-                project.get("description", message),
+                section.get("description", message),
                 skills=needed_skills,
-                previous_output=last_output,
+                previous_output="\n".join(html_parts[-1:]) if html_parts else "",
             )
             html = self.executor._extract_html(code)
 
             if not html:
-                self.state.fail_step(i, "No HTML generated")
-                print(f"   ❌ No HTML extracted")
+                self.state.fail_step(i, "No HTML")
                 continue
 
-            # API call 2: Verify with API
-            print(f"   🔍 Verifying with API...")
-            verify_ok = self.ai.verify_code(html, project.get("description", message))
+            # Extract CSS and body separately
+            style_match = re.search(r"<style[^>]*>(.*?)</style>", html, re.DOTALL)
+            if style_match:
+                css_parts.append(style_match.group(1).strip())
 
-            if not verify_ok:
-                # API call 3: Fix issues
-                print(f"   🔧 Fixing issues...")
-                fixed = self.ai.fix_code(html, project.get("description", message))
-                html = self.executor._extract_html(fixed) or html
-
-            # Local validation
-            ok, error = self.executor._validate(html)
-            if not ok:
-                # API call 4: Try fixing again
-                print(f"   🔧 Fixing: {error}")
-                fixed = self.ai.fix_code(html, error, project.get("description", ""))
-                html = self.executor._extract_html(fixed) or html
-                ok, error = self.executor._validate(html)
-
-            if ok:
-                filepath.write_text(html, encoding="utf-8")
-                self.state.complete_step(i, {"path": filename, "name": project["name"]})
-                files_created.append({"path": filename, "name": project["name"], "size": len(html)})
-                last_output = html
-                print(f"   ✅ {filename} ({len(html)} bytes)")
+            body_match = re.search(r"<body[^>]*>(.*?)</body>", html, re.DOTALL)
+            if body_match:
+                html_parts.append(body_match.group(1).strip())
             else:
-                self.state.fail_step(i, error)
-                print(f"   ❌ {error}")
+                html_parts.append(html)
+
+            self.state.complete_step(i, {"path": f"section_{i}.html", "name": section["name"]})
+            print(f"   ✅ {section['name']} done")
+
+        # Step 4: Merge into ONE page
+        print(f"\n   Merging into one page...")
+        final_html = self._merge_all(css_parts, html_parts, message)
+
+        # Save
+        filepath = self.config.output_dir / "index.html"
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        filepath.write_text(final_html, encoding="utf-8")
 
         self.state.finish()
 
-        # Response
-        if files_created:
-            names = ", ".join(f["name"] for f in files_created)
-            response = f"✅ ساخته شد! ({len(files_created)} فایل: {names})"
-            for f in files_created:
-                response += f"\n🔗 /preview/{f['path']}"
-        else:
-            response = "❌ نتونستم بسازم."
-
+        response = f"✅ سایت ساخته شد! ({len(final_html)} bytes)\n🔗 /preview/index.html"
         self.memory.save_message("assistant", response)
+
         return {
             "response": response,
-            "files": files_created,
-            "status": "done" if files_created else "error",
-            "logs": logs,
+            "files": [{"path": "index.html", "name": "index", "size": len(final_html)}],
+            "status": "done",
         }
+
+    def _handle_edit(self, message):
+        """Edit existing site — only change what's needed"""
+        print(f"
+✏️ Editing: {message[:50]}...")
+
+        # Read current site
+        current_path = self.config.output_dir / "index.html"
+        if not current_path.exists():
+            return {"response": "❌ سایتی وجود نداره. اول بساز.", "files": [], "status": "error"}
+
+        current_html = current_path.read_text("utf-8")
+
+        # AI edits only the needed part
+        result = self.ai.edit_section(current_html, message)
+        new_html = self.executor._extract_html(result)
+
+        if new_html:
+            current_path.write_text(new_html, encoding="utf-8")
+            response = f"✏️ ادیت شد! ({len(new_html)} bytes)
+🔗 /preview/index.html"
+            self.memory.save_message("assistant", response)
+            return {"response": response, "files": [{"path": "index.html", "name": "index", "size": len(new_html)}], "status": "done"}
+        else:
+            return {"response": "❌ نتونستم ادیت کنم.", "files": [], "status": "error"}
+
+    def _merge_all(self, css_parts, html_parts, original_request):
+        """Merge all CSS and body parts into one complete page"""
+        all_css = "\n\n".join(css_parts)
+        all_body = "\n\n".join(html_parts)
+
+        # Use AI to merge
+        merged = self.ai.merge_files(all_css, all_body, original_request)
+        html = self.executor._extract_html(merged)
+
+        if html:
+            return html
+
+        # Fallback: manual merge
+        return f'''<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{original_request[:50]}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{ font-family: 'Vazirmatn', sans-serif; }}
+        {all_css}
+    </style>
+</head>
+<body>
+{all_body}
+</body>
+</html>'''
+
+
+# Need re for regex
+import re

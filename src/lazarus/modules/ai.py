@@ -3,6 +3,7 @@ import requests
 import json
 import re
 from pathlib import Path
+from ..core.config import Config
 
 
 class AI:
@@ -40,6 +41,20 @@ class AI:
             if path.exists():
                 return path.read_text("utf-8")
         return ""
+
+    def needs_edit(self, message):
+        """Check if user wants to EDIT existing site"""
+        from pathlib import Path
+        msg = message.lower().strip()
+        edit_keywords = [
+            "ادیت", "تغییر", "عوض کن", "ترمیم", "ویرایش",
+            "edit", "change", "update", "modify",
+            "رنگ", "color", "فونت", "font", "سایز", "size",
+            "بیشتر", "کمتر", "بزرگتر", "کوچکتر",
+        ]
+        has_existing = (Path.home() / ".lazarus" / "output" / "index.html").exists()
+        has_keyword = any(kw in msg for kw in edit_keywords)
+        return has_existing and has_keyword
 
     def needs_code(self, message):
         """Does user want code? Only keyword check"""
@@ -123,6 +138,31 @@ class AI:
         )
         result = self._call([{"role": "user", "content": prompt}], max_tokens=100)
         return "true" in result.lower()
+
+    def edit_section(self, section_html, instruction):
+        """Edit a specific section without rebuilding everything"""
+        prompt = (
+            "You are editing a website section.\n"
+            "Make ONLY the requested change. Keep everything else the same.\n"
+            "Reply with ONLY the ```html code block.\n\n"
+            f"INSTRUCTION: {instruction}\n\n"
+            f"CURRENT CODE:\n{section_html[:3000]}\n"
+        )
+        return self._call([{"role": "user", "content": prompt}], max_tokens=8000)
+
+    def merge_files(self, all_css, all_body, original_request):
+        """Merge CSS and body parts into ONE complete page"""
+        prompt = (
+            "You are building a website. Merge these parts into ONE complete HTML page.\n"
+            "Combine all CSS into one <style> tag.\n"
+            "Combine all body content in correct order (header first, footer last).\n"
+            "RTL (dir=rtl, lang=fa), responsive, Vazirmatn font.\n"
+            "Reply with ONLY the ```html code block.\n\n"
+            f"User wants: {original_request}\n\n"
+            f"CSS:\n{all_css[:2000]}\n\n"
+            f"Body content:\n{all_body[:3000]}\n"
+        )
+        return self._call([{"role": "user", "content": prompt}], max_tokens=8000)
 
     def fix_code(self, html, error_or_description, task=""):
         """Fix broken code"""
