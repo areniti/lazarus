@@ -88,10 +88,12 @@ class AI:
             pass
         return [{"name": "main", "description": message, "file": {"name": "main.html"}}]
 
-    def generate_code(self, description, skills="", previous_output=""):
+    def generate_code(self, description, original_request="", skills="", previous_output=""):
         prompt = (
             "You are Lazarus, a professional website builder.\n"
             "Generate a COMPLETE, WORKING HTML page.\n\n"
+            "USER ORIGINAL REQUEST: " + (original_request or description) + "\n\n"
+            "THIS SECTION: " + description + "\n\n"
             "SKILLS:\n" + (skills[:1000] if skills else self.load_skills()[:1000]) + "\n\n"
             "RULES:\n"
             "- Start with <!DOCTYPE html>\n"

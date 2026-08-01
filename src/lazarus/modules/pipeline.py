@@ -48,6 +48,7 @@ class Pipeline:
             self.state.start_step(i)
             code = self.ai.generate_code(
                 section.get("description", message),
+                original_request=message,
                 skills=needed_skills,
                 previous_output="\n".join(html_parts[-1:]) if html_parts else "",
             )
