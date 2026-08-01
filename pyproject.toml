@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lazarus-cms"
+version = "4.0.0"
+description = "AI-Powered CMS with CPU-like Architecture"
+requires-python = ">=3.10"
+dependencies = [
+    "flask>=3.0",
+    "requests>=2.31",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+lazarus = "lazarus.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

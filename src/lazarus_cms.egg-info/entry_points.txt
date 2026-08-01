@@ -1,0 +1,2 @@
+[console_scripts]
+lazarus = lazarus.__main__:main

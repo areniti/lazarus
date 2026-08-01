@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Login - Lazarus{% endblock %}
+{% block content %}
+<div style="max-width: 400px; margin: 80px auto;">
+    <h2 style="text-align: center; margin-bottom: 24px;">🔑 ورود به پنل ادمین</h2>
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+    <form method="POST">
+        <input type="text" name="username" placeholder="نام کاربری" required>
+        <input type="password" name="password" placeholder="رمز عبور" required>
+        <button type="submit" class="btn" style="width: 100%;">ورود</button>
+    </form>
+</div>
+{% endblock %}
