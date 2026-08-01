@@ -1,3 +1,4 @@
+from pathlib import Path
 """AI - Control Unit: handles all API calls and decision making"""
 import requests
 import json
@@ -127,21 +128,23 @@ class AI:
         return "true" in result.lower()
 
     def generate_code(self, message):
-        """Generate HTML code for a build request"""
+        """Generate HTML code using skills reference"""
+        skills = self.load_skills()
         prompt = (
-            "You are a website builder.\n"
-            "Generate a COMPLETE HTML page.\n\n"
+            "You are Lazarus, a professional website builder.\n"
+            "Generate a COMPLETE, WORKING HTML page.\n\n"
+            "SKILLS REFERENCE:\n" + skills[:2000] + "\n\n"
             "RULES:\n"
             "- Start with <!DOCTYPE html>\n"
             "- Include ALL CSS inside <style> tag\n"
             "- RTL (dir=rtl, lang=fa)\n"
-            "- Modern design\n"
-            "- Responsive\n"
+            "- Modern, professional design\n"
+            "- Responsive (mobile + desktop)\n"
             "- Google Font: Vazirmatn\n"
-            "- One single file\n"
+            "- One single HTML file\n"
             "- NO explanations, NO questions\n\n"
             "REPLY: ONLY the ```html code block\n\n"
-            f"REQUEST: {message}"
+            f"USER REQUEST: {message}"
         )
         return self._call([{"role": "user", "content": prompt}], max_tokens=8000)
 
@@ -178,9 +181,36 @@ class AI:
         )
         return self._call([{"role": "user", "content": prompt}], max_tokens=8000)
 
+    def load_skills(self):
+        """Load skills from skills.md"""
+        # Try multiple locations
+        for path in [
+            Path(__file__).parent.parent / "skills.md",
+            Path(__file__).parent.parent / "docs" / "skills.md",
+            Path.home() / ".lazarus" / "skills.md",
+        ]:
+            if path.exists():
+                return path.read_text("utf-8")
+        return ""
+
+    def decompose(self, message):
+        """Break project into sub-projects"""
+        skills = self.load_skills()
+        prompt = (
+            "You are a project planner.\n"
+            "Break this request into 2-4 small sub-projects.\n"
+            "Each sub-project: name, description, input, output.\n\n"
+            "SKILLS:\n" + skills[:1000] + "\n\n"
+            "Reply in JSON:\n"
+            '[{"name":"...", "description":"...", "input":"...", "output":"..."}]\n\n'
+            f"REQUEST: {message}"
+        )
+        return self._call([{"role": "user", "content": prompt}], max_tokens=2000)
+
     def chat(self, message, history):
-        """General chat"""
-        messages = [{"role": "system", "content": "You are Lazarus, a friendly AI assistant. Reply in the same language as the user. Keep responses short and helpful."}]
+        """General chat with memory"""
+        skills = self.load_skills()
+        messages = [{"role": "system", "content": "You are Lazarus, a friendly AI assistant. Reply in the same language as the user. Keep responses short and helpful." + "\n\nSkills:\n" + skills[:500]}]
         messages.extend(history)
         messages.append({"role": "user", "content": message})
         return self._call(messages)

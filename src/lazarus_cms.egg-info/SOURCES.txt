@@ -1,9 +1,12 @@
+README.md
 pyproject.toml
 src/lazarus/__init__.py
 src/lazarus/__main__.py
 src/lazarus/prompts.py
+src/lazarus/skills.md
 src/lazarus/core/__init__.py
 src/lazarus/core/config.py
+src/lazarus/core/memory.py
 src/lazarus/core/user.py
 src/lazarus/modules/__init__.py
 src/lazarus/modules/ai.py

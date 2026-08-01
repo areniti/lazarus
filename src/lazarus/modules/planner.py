@@ -4,29 +4,22 @@ import re
 
 
 class Planner:
-    """
-    Planner - like CPU instruction decoder.
-    Breaks a big project into small independent sub-projects.
-    Each has: name, description, file spec, input, output.
-    """
+    """Breaks projects into sub-projects with file specs."""
 
     def __init__(self, ai):
         self.ai = ai
 
     def decompose(self, message):
-        """Break project into sub-projects with file specs"""
-        # Simple keyword-based decomposition (no API call = fast)
-        tasks = self._simple_decompose(message)
-        
-        # If too few tasks, ask AI
-        if len(tasks) <= 1:
-            raw = self.ai.decompose(message)
-            tasks = self._parse_tasks(raw) or tasks
+        """Break project into sub-projects"""
+        # Ask AI to decompose
+        raw = self.ai.decompose(message)
+        tasks = self._parse_tasks(raw)
 
         if not tasks:
-            tasks = [{"name": "main", "description": message}]
+            # Fallback: single task
+            tasks = [{"name": "main", "description": message, "input": message, "output": "HTML page"}]
 
-        # Add file specs to each task
+        # Add file specs
         for task in tasks:
             if "file" not in task:
                 task["file"] = self._make_file_spec(task)
@@ -45,42 +38,18 @@ class Planner:
             pass
         return []
 
-    def _simple_decompose(self, message):
-        """Fast local decomposition without API"""
-        msg = message.lower()
-        tasks = []
-        
-        # Always create: HTML structure
-        tasks.append({
-            "name": "html_structure",
-            "description": f"Create complete HTML page: {message}",
-            "input": message,
-            "output": "Complete HTML page with CSS"
-        })
-        
-        return tasks
-
     def _make_file_spec(self, task):
         """Create file specification for a task"""
         name = task.get("name", "output")
         desc = task.get("description", "").lower()
 
-        # Determine format
         if any(kw in desc for kw in ["css", "style", "استایل"]):
-            fmt = "css"
-            ext = "css"
+            fmt, ext = "css", "css"
         elif any(kw in desc for kw in ["js", "javascript", "اسکریپت"]):
-            fmt = "javascript"
-            ext = "js"
+            fmt, ext = "javascript", "js"
         elif any(kw in desc for kw in ["json", "داده", "data"]):
-            fmt = "json"
-            ext = "json"
+            fmt, ext = "json", "json"
         else:
-            fmt = "html"
-            ext = "html"
+            fmt, ext = "html", "html"
 
-        return {
-            "name": f"{name}.{ext}",
-            "format": fmt,
-            "css": "inline" if fmt == "html" else None,
-        }
+        return {"name": f"{name}.{ext}", "format": fmt}
