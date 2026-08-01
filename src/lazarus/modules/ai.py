@@ -1,14 +1,11 @@
-"""AI - Control Unit: handles all API calls and decision making"""
+"""AI - Control Unit"""
 import requests
 import json
 import re
 from pathlib import Path
-from ..core.config import Config
 
 
 class AI:
-    """Control Unit - routes all AI decisions"""
-
     def __init__(self, config):
         self.config = config
         self.api_url = config.data["api"]["url"]
@@ -16,7 +13,6 @@ class AI:
         self.model = config.data["api"]["model"]
 
     def _call(self, messages, max_tokens=4096):
-        """Raw API call - ALU operation"""
         url = self.api_url.rstrip("/")
         if not url.endswith("/chat/completions"):
             url += "/chat/completions"
@@ -32,7 +28,6 @@ class AI:
         return content if content else "No response"
 
     def load_skills(self):
-        """Load skills from skills.md"""
         for path in [
             Path(__file__).parent.parent / "skills.md",
             Path(__file__).parent.parent / "docs" / "skills.md",
@@ -43,8 +38,6 @@ class AI:
         return ""
 
     def needs_edit(self, message):
-        """Check if user wants to EDIT existing site"""
-        from pathlib import Path
         msg = message.lower().strip()
         edit_keywords = [
             "ادیت", "تغییر", "عوض کن", "ترمیم", "ویرایش",
@@ -57,7 +50,6 @@ class AI:
         return has_existing and has_keyword
 
     def needs_code(self, message):
-        """Does user want code? Only keyword check"""
         msg = message.lower().strip()
         code_keywords = [
             "بساز", "بسازید", "درست کن", " بنویس", "طراحی کن", "ایجاد کن",
@@ -68,29 +60,24 @@ class AI:
         return any(kw in msg for kw in code_keywords)
 
     def ask_skills(self, message, skills):
-        """Ask which skills are needed"""
         prompt = (
             "You are a project planner.\n"
-            "Given the user request and available skills, which skills are needed?\n"
-            "Reply with ONLY a comma-separated list of skill names.\n"
-            "If none needed, reply: none\n\n"
-            f"Available skills:\n{skills[:1500]}\n\n"
-            f"User request: {message}"
+            "Which skills are needed for this request?\n"
+            "Reply with ONLY a comma-separated list.\n"
+            "If none, reply: none\n\n"
+            f"Skills:\n{skills[:1500]}\n\n"
+            f"Request: {message}"
         )
-        result = self._call([{"role": "user", "content": prompt}], max_tokens=100)
-        return result.strip()
+        return self._call([{"role": "user", "content": prompt}], max_tokens=100).strip()
 
     def decompose_with_skills(self, message, needed_skills):
-        """Decompose project using skills"""
         prompt = (
             "You are a website architect.\n"
-            "Break this into 3-5 sub-projects, each is ONE HTML file.\n"
-            "Each sub-project: name, description, file name.\n"
-            "Use the skills reference for design patterns.\n\n"
-            f"Skills needed: {needed_skills}\n\n"
+            "Break this into 3-5 sections, each is ONE part of the page.\n"
             "Reply in JSON:\n"
-            '[{"name":"header", "description":"Build site header with navigation", "file":{"name":"header.html"}}]\n\n'
-            f"User request: {message}"
+            '[{"name":"header", "description":"Build header with nav", "file":{"name":"header.html"}}]\n\n'
+            f"Skills: {needed_skills}\n"
+            f"Request: {message}"
         )
         result = self._call([{"role": "user", "content": prompt}], max_tokens=2000)
         try:
@@ -101,12 +88,7 @@ class AI:
             pass
         return [{"name": "main", "description": message, "file": {"name": "main.html"}}]
 
-    def decompose(self, message):
-        """Simple decompose"""
-        return self.decompose_with_skills(message, "none")
-
     def generate_code(self, description, skills="", previous_output=""):
-        """Generate HTML code"""
         prompt = (
             "You are Lazarus, a professional website builder.\n"
             "Generate a COMPLETE, WORKING HTML page.\n\n"
@@ -116,69 +98,59 @@ class AI:
             "- Include ALL CSS inside <style> tag\n"
             "- RTL (dir=rtl, lang=fa)\n"
             "- Modern, professional design\n"
-            "- Responsive (mobile + desktop)\n"
+            "- Responsive\n"
             "- Google Font: Vazirmatn\n"
             "- One single HTML file\n"
-            "- NO explanations, NO questions\n"
-            "- ONLY the ```html code block\n\n"
+            "- NO explanations, ONLY ```html code block\n\n"
         )
         if previous_output:
-            prompt += f"Previous section (for consistency):\n{previous_output[:500]}\n\n"
+            prompt += f"Previous section:\n{previous_output[:500]}\n\n"
         prompt += f"BUILD: {description}"
         return self._call([{"role": "user", "content": prompt}], max_tokens=8000)
 
     def verify_code(self, html, description):
-        """Verify code with API"""
         prompt = (
             "Reply ONLY True or False.\n"
-            "Is this valid, complete, professional HTML?\n"
-            "Check: DOCTYPE, html tag, head, body, content, CSS.\n"
-            f"Description: {description}\n"
-            f"Code preview: {html[:400]}\n"
+            "Is this valid, complete HTML?\n"
+            f"Code: {html[:400]}\n"
         )
         result = self._call([{"role": "user", "content": prompt}], max_tokens=100)
         return "true" in result.lower()
 
     def edit_section(self, section_html, instruction):
-        """Edit a specific section without rebuilding everything"""
         prompt = (
-            "You are editing a website section.\n"
-            "Make ONLY the requested change. Keep everything else the same.\n"
+            "Edit this HTML. Make ONLY the requested change.\n"
             "Reply with ONLY the ```html code block.\n\n"
-            f"INSTRUCTION: {instruction}\n\n"
-            f"CURRENT CODE:\n{section_html[:3000]}\n"
+            f"INSTRUCTION: {instruction}\n"
+            f"CODE:\n{section_html[:3000]}\n"
         )
         return self._call([{"role": "user", "content": prompt}], max_tokens=8000)
 
     def merge_files(self, all_css, all_body, original_request):
-        """Merge CSS and body parts into ONE complete page"""
         prompt = (
-            "You are building a website. Merge these parts into ONE complete HTML page.\n"
-            "Combine all CSS into one <style> tag.\n"
-            "Combine all body content in correct order (header first, footer last).\n"
-            "RTL (dir=rtl, lang=fa), responsive, Vazirmatn font.\n"
-            "Reply with ONLY the ```html code block.\n\n"
-            f"User wants: {original_request}\n\n"
-            f"CSS:\n{all_css[:2000]}\n\n"
-            f"Body content:\n{all_body[:3000]}\n"
+            "Merge these parts into ONE complete HTML page.\n"
+            "Combine CSS into one <style> tag.\n"
+            "Combine body in order (header first, footer last).\n"
+            "RTL, responsive, Vazirmatn.\n"
+            "Reply with ONLY ```html code block.\n\n"
+            f"Request: {original_request}\n"
+            f"CSS:\n{all_css[:2000]}\n"
+            f"Body:\n{all_body[:3000]}\n"
         )
         return self._call([{"role": "user", "content": prompt}], max_tokens=8000)
 
-    def fix_code(self, html, error_or_description, task=""):
-        """Fix broken code"""
+    def fix_code(self, html, error, task=""):
         prompt = (
-            "Fix this HTML code.\n"
-            f"Problem: {error_or_description}\n"
+            "Fix this HTML.\n"
+            f"Problem: {error}\n"
             f"Task: {task}\n"
-            "Reply with ONLY the fixed ```html code block.\n\n"
+            "Reply with ONLY fixed ```html code block.\n\n"
             f"Code:\n{html[:3000]}\n"
         )
         return self._call([{"role": "user", "content": prompt}], max_tokens=8000)
 
     def chat(self, message, history):
-        """General chat with memory"""
-        skills = self.load_skills()
-        messages = [{"role": "system", "content": "You are Lazarus, a friendly AI assistant. Reply in the same language as the user. Keep responses short and helpful."}]
+        messages = [{"role": "system", "content": "You are Lazarus, a friendly AI assistant. Reply in the same language as the user. Keep responses short."}]
         messages.extend(history)
         messages.append({"role": "user", "content": message})
         return self._call(messages)
