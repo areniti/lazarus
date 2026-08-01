@@ -15,6 +15,14 @@ class AI:
 
     def _call(self, messages, max_tokens=4096):
         """Raw API call - ALU operation"""
+        # Auto-append /chat/completions if missing
+        url = self.api_url
+        if not url.endswith("/chat/completions"):
+            if url.endswith("/"):
+                url += "chat/completions"
+            else:
+                url += "/chat/completions"
+        
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
@@ -24,13 +32,14 @@ class AI:
             "messages": messages,
             "max_tokens": max_tokens,
         }
-        r = requests.post(self.api_url, headers=headers, json=data, timeout=120)
+        r = requests.post(url, headers=headers, json=data, timeout=120)
         if r.status_code != 200:
             return f"ERROR: HTTP {r.status_code}"
         result = r.json()
         if "choices" not in result:
             return f"ERROR: {json.dumps(result)[:200]}"
-        return result["choices"][0]["message"]["content"]
+        content = result["choices"][0]["message"]["content"]
+        return content if content else "No response"
 
     # ===== CONTROL UNIT DECISIONS =====
 
@@ -42,29 +51,36 @@ class AI:
             "Admin = wants to manage, configure, view settings\n"
             f"User said: {message}"
         )
-        result = self._call([{"role": "user", "content": prompt}], max_tokens=10)
+        result = self._call([{"role": "user", "content": prompt}], max_tokens=100)
         return "admin" if "admin" in result.lower() else "developer"
 
     def needs_code(self, message):
-        """Step 2: Does user want code? True/False"""
-        prompt = (
-            "Reply with ONLY 'True' or 'False'.\n"
-            "Does this message require generating code, HTML, or a website?\n"
-            f"User said: {message}"
-        )
-        result = self._call([{"role": "user", "content": prompt}], max_tokens=10)
-        return "true" in result.lower()
+        """Does user want code? Only keyword check (no API, no length check)"""
+        msg = message.lower().strip()
+        
+        # MUST have a code keyword to be a build request
+        code_keywords = [
+            "بساز", "بسازید", "درست کن", " بنویس", "طراحی کن", "ایجاد کن",
+            "ساخت", "سایت", "صفحه", "وبلاگ", "فروشگاه", "رستوران", "بلاگ", "قالب",
+            "html", "css", "build", "create", "make", "design", "generate", "code",
+            "website", "page", "site", "blog", "template", "کد",
+        ]
+        return any(kw in msg for kw in code_keywords)
 
     def info_complete(self, message, context=""):
-        """Step 3: Is info sufficient? True/False"""
+        """Step 3: Is info sufficient?"""
+        msg = message.lower()
+        if len(message.split()) >= 5:
+            return True
+        types = ["سایت", "وبلاگ", "صفحه", "فروشگاه", "رستوران", "بلاگ",
+                  "site", "blog", "page", "shop", "website", "html"]
+        if any(t in msg for t in types):
+            return True
         prompt = (
-            "Reply with ONLY 'True' or 'False'.\n"
-            "Does the user provide ENOUGH information to build what they want?\n"
-            "If vague or missing details -> False\n"
-            f"Context: {context}\n"
-            f"User said: {message}"
+            "Reply ONLY True or False. Is this enough info to build a website?\n"
+            f"User: {message}"
         )
-        result = self._call([{"role": "user", "content": prompt}], max_tokens=10)
+        result = self._call([{"role": "user", "content": prompt}], max_tokens=100)
         return "true" in result.lower()
 
     def ask_clarification(self, message):
@@ -82,13 +98,12 @@ class AI:
         prompt = (
             "You are a project planner. Break the user's request into small, independent sub-projects.\n"
             "Each sub-project must have:\n"
-            "- name: short name\n"
+            "- name: short name (underscores, no spaces)\n"
             "- description: what to build\n"
             "- input: what it needs\n"
             "- output: what it produces\n\n"
             "Reply in JSON format:\n"
             '[{"name":"...", "description":"...", "input":"...", "output":"..."}]\n\n'
-            f"Skills reference:\n{skills}\n\n"
             f"User request: {message}"
         )
         result = self._call([{"role": "user", "content": prompt}], max_tokens=2000)
@@ -100,36 +115,72 @@ class AI:
             pass
         return [{"name": "main", "description": result[:200], "input": message, "output": "HTML site"}]
 
-    def generate_code(self, task, previous_output=""):
-        """Step 5: Generate code for a sub-project"""
+    def is_complex_task(self, description):
+        """Check if a sub-project needs further breakdown"""
         prompt = (
-            "You are an expert web developer.\n"
-            "Generate COMPLETE, WORKING HTML code.\n"
-            "Include all CSS inline. RTL, responsive, modern design.\n"
-            "Reply with ONLY the HTML code in a ```html block.\n\n"
-            f"Task: {task['description']}\n"
-            f"Input: {task['input']}\n"
-            f"Output expected: {task['output']}\n"
+            "Reply ONLY True or False.\n"
+            "Is this task too complex for a single AI response? "
+            "Would it benefit from being split into smaller pieces?\n"
+            f"Task: {description}"
         )
-        if previous_output:
-            prompt += f"Previous sub-project output:\n{previous_output[:500]}\n"
+        result = self._call([{"role": "user", "content": prompt}], max_tokens=100)
+        return "true" in result.lower()
+
+    def generate_code(self, message):
+        """Generate HTML code for a build request"""
+        prompt = (
+            "You are a website builder.\n"
+            "Generate a COMPLETE HTML page.\n\n"
+            "RULES:\n"
+            "- Start with <!DOCTYPE html>\n"
+            "- Include ALL CSS inside <style> tag\n"
+            "- RTL (dir=rtl, lang=fa)\n"
+            "- Modern design\n"
+            "- Responsive\n"
+            "- Google Font: Vazirmatn\n"
+            "- One single file\n"
+            "- NO explanations, NO questions\n\n"
+            "REPLY: ONLY the ```html code block\n\n"
+            f"REQUEST: {message}"
+        )
         return self._call([{"role": "user", "content": prompt}], max_tokens=8000)
 
     def verify(self, code, task_description):
-        """Step 7: Verify code is correct"""
+        """Step 7: Verify code is correct - local checks + AI"""
+        # Fast local checks (no API needed)
+        has_doctype = "<!DOCTYPE" in code or "<!doctype" in code
+        has_html = "<html" in code
+        has_close = "</html>" in code
+        has_body = "<body" in code
+        has_content = len(code) > 500
+
+        # If all basic checks pass, it's probably OK
+        if all([has_doctype, has_html, has_close, has_body, has_content]):
+            return True
+
+        # If basic checks fail, ask AI
         prompt = (
-            "Reply with ONLY 'True' or 'False'.\n"
-            "Is this code valid, complete, and matches the task description?\n"
-            "Check: has <!DOCTYPE>, has <html>, has </html>, has content.\n"
-            f"Task: {task_description}\n"
-            f"Code starts with: {code[:300]}\n"
+            "Reply with ONLY True or False. Is this valid complete HTML?\n"
+            f"Code preview: {code[:300]}\n"
         )
-        result = self._call([{"role": "user", "content": prompt}], max_tokens=10)
+        result = self._call([{"role": "user", "content": prompt}], max_tokens=100)
         return "true" in result.lower()
+
+    def fix_code(self, code, error_info, task_description):
+        """Fix broken code based on error"""
+        prompt = (
+            "The following HTML code has errors. Fix it.\n"
+            "Keep the same design but fix the issues.\n"
+            "Reply with ONLY the fixed HTML in a ```html block.\n\n"
+            f"Error: {error_info}\n"
+            f"Task: {task_description}\n"
+            f"Code:\n{code[:2000]}\n"
+        )
+        return self._call([{"role": "user", "content": prompt}], max_tokens=8000)
 
     def chat(self, message, history):
         """General chat"""
-        messages = [{"role": "system", "content": "You are Lazarus, a helpful AI web developer."}]
+        messages = [{"role": "system", "content": "You are Lazarus, a friendly AI assistant. Reply in the same language as the user. Keep responses short and helpful."}]
         messages.extend(history)
         messages.append({"role": "user", "content": message})
         return self._call(messages)

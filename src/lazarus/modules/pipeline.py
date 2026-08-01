@@ -7,8 +7,9 @@ from ..core.config import Config
 
 class Pipeline:
     """
-    Main pipeline - like a CPU instruction cycle:
-    Fetch -> Decode -> Execute -> Writeback
+    Main pipeline.
+    Developer mode: chat for normal messages, build for requests.
+    Admin mode: settings only.
     """
 
     def __init__(self, config=None):
@@ -18,63 +19,47 @@ class Pipeline:
         self.executor = Executor(self.ai, self.state, self.config.output_dir)
 
     def process(self, message, history=None):
-        """
-        Full pipeline for a user message.
-        Returns: {response, files, progress, status}
-        """
+        """Full pipeline for a user message"""
         history = history or []
-
-        # Step 1: Detect role
-        role = self.ai.detect_role(message)
+        role = self.config.data.get("role", "developer")
 
         if role == "admin":
-            return self._admin_flow(message)
+            return {"response": "Admin mode. Use /admin for settings.", "files": [], "status": "admin"}
 
-        # Step 2: Needs code?
-        needs_code = self.ai.needs_code(message)
+        # Check if user wants to BUILD something
+        is_build_request = self.ai.needs_code(message)
 
-        if not needs_code:
+        if not is_build_request:
+            # It's just chat
             response = self.ai.chat(message, history)
             return {"response": response, "files": [], "status": "chat"}
 
-        # Step 3: Info complete?
-        complete = self.ai.info_complete(message)
+        # Build request - generate code
+        print(f"\n🔨 Building: {message[:50]}...")
+        self.state.start_new_project(message, [{"name": "main", "description": message}])
+        self.state.start_step(0)
 
-        if not complete:
-            response = self.ai.ask_clarification(message)
-            return {"response": response, "files": [], "status": "need_info"}
+        code = self.ai.generate_code(message)
+        html = self.executor._extract_html(code)
 
-        # Step 4: Decompose
-        sub_projects = self.ai.decompose(message)
-        self.state.start_new_project(message, sub_projects)
+        if not html:
+            self.state.fail_step(0, "No HTML generated")
+            return {"response": f"❌ نتونستم کد بسازم.\n\n{code[:300]}", "files": [], "status": "error"}
 
-        # Step 5: Execute all
-        success = self.executor.run_all()
+        ok, error = self.executor._validate(html)
+        if not ok:
+            self.state.fail_step(0, error)
+            return {"response": f"❌ خطا: {error}", "files": [], "status": "error"}
 
-        if not success:
-            return {
-                "response": f"❌ Error at step {self.state.state['current_step']}",
-                "files": [],
-                "status": "error",
-            }
+        filepath = self.config.output_dir / "main.html"
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        filepath.write_text(html, encoding="utf-8")
 
-        # Step 6: Done
+        self.state.complete_step(0, {"path": "main.html", "name": "main"})
         self.state.finish()
-        progress = self.state.get_progress()
-        files = [r for r in progress["results"] if r.get("status") == "done"]
 
         return {
-            "response": f"✅ Project complete! {progress['done']} sub-projects built.",
-            "files": files,
+            "response": f"✅ سایت ساخته شد! ({len(html)} bytes)\n🔗 /preview/main.html",
+            "files": [{"path": "main.html", "name": "main", "size": len(html)}],
             "status": "done",
-            "progress": progress,
         }
-
-    def _admin_flow(self, message):
-        """Handle admin messages"""
-        if "show config" in message.lower():
-            return {"response": str(self.config.data), "files": [], "status": "config"}
-        if "progress" in message.lower():
-            progress = self.state.get_progress()
-            return {"response": str(progress), "files": [], "status": "progress"}
-        return {"response": "Admin panel available at /admin", "files": [], "status": "admin"}

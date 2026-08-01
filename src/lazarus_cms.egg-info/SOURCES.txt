@@ -9,9 +9,15 @@ src/lazarus/modules/__init__.py
 src/lazarus/modules/ai.py
 src/lazarus/modules/executor.py
 src/lazarus/modules/pipeline.py
+src/lazarus/modules/planner.py
 src/lazarus/modules/state.py
 src/lazarus/web/__init__.py
 src/lazarus/web/app.py
+src/lazarus/web/templates/admin.html
+src/lazarus/web/templates/base.html
+src/lazarus/web/templates/index.html
+src/lazarus/web/templates/login.html
+src/lazarus/web/templates/user.html
 src/lazarus_cms.egg-info/PKG-INFO
 src/lazarus_cms.egg-info/SOURCES.txt
 src/lazarus_cms.egg-info/dependency_links.txt

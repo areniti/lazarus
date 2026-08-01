@@ -1,22 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Lazarus - AI CMS{% endblock %}
+{% block title %}Lazarus{% endblock %}
 {% block content %}
-<div style="text-align:center; padding: 80px 0;">
-    <h1 style="font-size: 48px; margin-bottom: 16px;">🔧 L A Z A R U S</h1>
-    <p style="color: #8b949e; font-size: 18px; margin-bottom: 40px;">AI-Powered CMS with CPU-like Architecture</p>
-    <div style="display: flex; gap: 16px; justify-content: center;">
-        <a href="/admin/login" class="btn btn-blue">⚙️ پنل ادمین</a>
-        <a href="/user" class="btn">👥 صفحه کاربران</a>
-    </div>
-    <div class="card" style="margin-top: 40px; text-align: right;">
-        <h3 style="color: #58a6ff; margin-bottom: 12px;">🏗️ معماری</h3>
-        <p style="color: #8b949e; line-height: 2;">
-            سیستم مثل یه پردازنده کار میکنه:<br>
-            🔴 <strong>API calls</strong> = ALU (پردازش)<br>
-            🟣 <strong>AI</strong> = Control Unit (تصمیم‌گیری)<br>
-            🔴 <strong>State Register</strong> = رجیسترها (حافظه وضعیت)<br>
-            🟢 <strong>Modules</strong> = بلوک‌های مجزا (مثل CPU)
-        </p>
-    </div>
+{% if sites %}
+<div style="padding:0;margin:-20px;">
+    {% for site in sites %}
+    <iframe src="/preview/{{ site.file }}" style="width:100%;height:calc(100vh - 60px);border:none;border-radius:12px;"></iframe>
+    {% endfor %}
 </div>
+{% else %}
+<div style="text-align:center;padding:100px 0;">
+    <h1 style="font-size:64px;color:#58a6ff;margin-bottom:16px;">🔧 L A Z A R U S</h1>
+    <p style="color:#8b949e;font-size:18px;">AI-Powered CMS</p>
+    <p style="color:#484f58;font-size:14px;margin-top:40px;">هنوز سایتی ساخته نشده</p>
+    <a href="/admin" class="btn btn-blue" style="margin-top:20px;">⚙️ پنل ادمین</a>
+</div>
+{% endif %}
 {% endblock %}

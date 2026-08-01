@@ -1,17 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Users - Lazarus{% endblock %}
+{% block title %}Lazarus{% endblock %}
 {% block content %}
-<h1>👥 صفحه کاربران</h1>
-<div class="card">
-    {% if sites %}
+{% if sites %}
+<div style="padding:0;margin:-20px;">
     {% for site in sites %}
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #30363d;">
-        <span>{{ site.name }}</span>
-        <a href="/preview/{{ site.file }}" target="_blank" class="btn">مشاهده سایت</a>
-    </div>
+    <iframe src="/preview/{{ site.file }}" style="width:100%;height:calc(100vh - 60px);border:none;border-radius:12px;"></iframe>
     {% endfor %}
-    {% else %}
-    <p style="color: #8b949e; text-align: center; padding: 40px;">هنوز سایتی ساخته نشده</p>
-    {% endif %}
 </div>
+{% else %}
+<div style="text-align:center;padding:100px 0;">
+    <h1 style="font-size:64px;color:#58a6ff;margin-bottom:16px;">🔧 L A Z A R U S</h1>
+    <p style="color:#8b949e;font-size:18px;">AI-Powered CMS</p>
+    <p style="color:#484f58;font-size:14px;margin-top:40px;">هنوز سایتی ساخته نشده</p>
+</div>
+{% endif %}
 {% endblock %}
