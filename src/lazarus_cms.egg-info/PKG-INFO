@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: lazarus-cms
-Version: 4.2.0
+Version: 4.3.0
 Summary: AI-Powered CMS with CPU-like Architecture
 Requires-Python: >=3.10
 Requires-Dist: flask>=3.0
