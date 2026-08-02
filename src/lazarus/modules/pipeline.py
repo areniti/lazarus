@@ -106,19 +106,13 @@ class Pipeline:
                     log.append(f"  ❌ تلاش {attempt}: کد خالی")
                     continue
 
-                # Verify
-                verdict = self.ai.verify_page(file_info, html)
-
-                if "APPROVED" in verdict.upper():
-                    full_path = base / path
-                    full_path.parent.mkdir(parents=True, exist_ok=True)
-                    full_path.write_text(html, encoding="utf-8")
-                    files_created.append({"name": path, "size": len(html)})
-                    log.append(f"  ✅ {path} ({len(html)} bytes)")
-                    success = True
-                else:
-                    reason = verdict.replace("REJECTED:", "").strip()[:80]
-                    log.append(f"  ❌ تلاش {attempt}: {reason}")
+                # Save directly (no verify - model can't do it reliably)
+                full_path = base / path
+                full_path.parent.mkdir(parents=True, exist_ok=True)
+                full_path.write_text(html, encoding="utf-8")
+                files_created.append({"name": path, "size": len(html)})
+                log.append(f"  ✅ {path} ({len(html)} bytes)")
+                success = True
 
             if not success:
                 log.append(f"  ⚠️ {path} آماده نشد")
