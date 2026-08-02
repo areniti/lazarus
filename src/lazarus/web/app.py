@@ -22,7 +22,7 @@ def create_app():
     def index():
         sites = []
         if config.output_dir.exists():
-            sites = [{"name": f.stem, "file": f.name} for f in config.output_dir.glob("*.html")]
+            sites = [{"name": f.stem, "file": f.name} for f in config.output_dir.rglob("*.html")]
         return render_template("index.html", sites=sites)
 
     @app.route("/preview/<path:filename>")
@@ -57,7 +57,7 @@ def create_app():
         sites = []
         if config.output_dir.exists():
             sites = [{"name": f.stem, "file": f.name, "size": f.stat().st_size}
-                     for f in config.output_dir.glob("*.html")]
+                     for f in config.output_dir.rglob("*.html")]
         return render_template("admin.html", sites=sites, config=config.data)
 
     @app.route("/admin/chat")
@@ -224,7 +224,7 @@ def create_app():
     def user_page():
         sites = []
         if config.output_dir.exists():
-            sites = [{"name": f.stem, "file": f.name} for f in config.output_dir.glob("*.html")]
+            sites = [{"name": f.stem, "file": f.name} for f in config.output_dir.rglob("*.html")]
         return render_template("index.html", sites=sites)
 
     return app
