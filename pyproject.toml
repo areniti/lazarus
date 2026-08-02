@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lazarus-cms"
-version = "5.4.1"
+version = "5.4.2"
 description = "AI-Powered CMS with CPU-like Architecture"
 requires-python = ">=3.10"
 dependencies = [
