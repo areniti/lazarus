@@ -25,7 +25,9 @@ class AI:
             result = r.json()
             if "choices" not in result:
                 return f"ERROR: {json.dumps(result)[:200]}"
-            return result["choices"][0]["message"]["content"] or "No response"
+            msg = result["choices"][0]["message"]
+            content = msg.get("content") or msg.get("reasoning") or "No response"
+            return content
         except requests.Timeout:
             return "ERROR: Timeout"
         except Exception as e:
