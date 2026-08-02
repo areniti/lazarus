@@ -238,6 +238,7 @@ RULES:
 
 OUTPUT: ONLY HTML in a ```html block."""
         return self._call([{"role": "user", "content": prompt}], max_tokens=4096)
+        return self._call([{"role": "user", "content": prompt}], max_tokens=4096)
 
     # ===== GENERATE HOMEPAGE =====
 
@@ -273,6 +274,7 @@ RULES:
 8. Modern dark design
 
 OUTPUT: ONLY HTML in a ```html block."""
+        return self._call([{"role": "user", "content": prompt}], max_tokens=4096)
 
     # ===== VERIFY =====
 
