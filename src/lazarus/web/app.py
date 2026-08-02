@@ -7,7 +7,7 @@ from ..modules.pipeline import Pipeline
 
 def create_app():
     app = Flask(__name__)
-    app.secret_key = "lazarus-secret-key-change-me"
+    app.secret_key = "42f161997178fe6461f6c1f9adff5571"
     config = Config()
     pipeline = Pipeline(config)
 
