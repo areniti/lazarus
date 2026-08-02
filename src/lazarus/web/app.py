@@ -202,6 +202,13 @@ def create_app():
         config.remove_model(index)
         return jsonify({"ok": True})
 
+    @app.route("/api/chat-history")
+    def api_chat_history():
+        if not require_login():
+            return jsonify({"error": "login"})
+        history = pipeline.memory.get_history(limit=50)
+        return jsonify({"history": history})
+
     @app.route("/api/models-list")
     def api_models_list():
         if not require_login():
