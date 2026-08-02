@@ -91,8 +91,12 @@ def create_app():
             payload = {"model": model, "messages": [{"role": "user", "content": "say ok"}], "max_tokens": 10}
             r = requests.post(url, headers=headers, json=payload, timeout=15)
             if r.status_code == 200:
-                txt = r.json().get("choices", [{}])[0].get("message", {}).get("content", "")
-                return jsonify({"ok": True, "response": txt[:50], "model": model})
+                result = r.json()
+                choices = result.get("choices", [])
+                if choices:
+                    content = choices[0].get("message", {}).get("content", "") or "ok"
+                    return jsonify({"ok": True, "response": content[:50], "model": model})
+                return jsonify({"ok": True, "response": "ok", "model": model})
             return jsonify({"ok": False, "error": f"HTTP {r.status_code}"})
         except Exception as e:
             return jsonify({"ok": False, "error": str(e)})
