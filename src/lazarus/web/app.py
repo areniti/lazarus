@@ -25,7 +25,7 @@ def create_app():
             sites = [{"name": f.stem, "file": f.name} for f in config.output_dir.glob("*.html")]
         return render_template("index.html", sites=sites)
 
-    @app.route("/preview/<filename>")
+    @app.route("/preview/<path:filename>")
     def preview(filename):
         path = config.output_dir / filename
         if path.exists():
