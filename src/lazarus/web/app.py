@@ -18,6 +18,11 @@ def create_app():
             sites = [{"name": f.stem, "file": f.name} for f in config.output_dir.glob("*.html")]
         return render_template("index.html", sites=sites)
 
+    @app.route("/logout")
+    def logout():
+        session.clear()
+        return redirect(url_for("login"))
+
     @app.route("/admin/login", methods=["GET", "POST"])
     def login():
         if request.method == "POST":
@@ -49,6 +54,48 @@ def create_app():
         if data.get("password"): config.data["password"] = data["password"]
         config.save()
         return jsonify({"ok": True})
+
+    @app.route("/api/fetch-models", methods=["POST"])
+    def api_fetch_models():
+        if not session.get("logged_in"):
+            return jsonify({"error": "login"})
+        data = request.get_json()
+        api_url = data.get("api_url", "")
+        api_key = data.get("api_key", "")
+        if not api_url or not api_key:
+            return jsonify({"error": "URL and Key required"})
+        try:
+            models_url = api_url.rstrip("/") + "/models"
+            headers = {"Authorization": f"Bearer {api_key}"}
+            r = requests.get(models_url, headers=headers, timeout=15)
+            if r.status_code == 200:
+                models = [m.get("id", "") for m in r.json().get("data", []) if m.get("id")]
+                return jsonify({"models": sorted(models)})
+            return jsonify({"error": f"HTTP {r.status_code}", "models": []})
+        except Exception as e:
+            return jsonify({"error": str(e), "models": []})
+
+    @app.route("/api/test-model", methods=["POST"])
+    def api_test_model():
+        if not session.get("logged_in"):
+            return jsonify({"error": "login"})
+        data = request.get_json()
+        api_url = data.get("api_url", config.data["api"]["url"])
+        api_key = data.get("api_key", config.data["api"]["key"])
+        model = data.get("model", config.data["api"]["model"])
+        url = api_url.rstrip("/")
+        if not url.endswith("/chat/completions"):
+            url += "/chat/completions"
+        try:
+            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+            payload = {"model": model, "messages": [{"role": "user", "content": "say ok"}], "max_tokens": 10}
+            r = requests.post(url, headers=headers, json=payload, timeout=15)
+            if r.status_code == 200:
+                txt = r.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+                return jsonify({"ok": True, "response": txt[:50], "model": model})
+            return jsonify({"ok": False, "error": f"HTTP {r.status_code}"})
+        except Exception as e:
+            return jsonify({"ok": False, "error": str(e)})
 
     @app.route("/api/chat", methods=["POST"])
     def api_chat():
