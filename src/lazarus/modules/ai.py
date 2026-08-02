@@ -82,15 +82,16 @@ class AI:
 
 TASK: {message}
 
-Break this into 3-5 SMALL steps. Each step should produce ONE file.
+Break this into 2-3 SMALL steps. Each step produces ONE HTML file.
 Maximum 50 lines of code per step.
+ALL files must be .html (no separate .css or .js files).
 
 Reply in JSON format:
-[{{"step": 1, "name": "filename.html", "description": "what to build", "lines": 30}}]
+[{{"step": 1, "name": "page.html", "description": "what to build", "lines": 50}}]
 
 Rules:
-- Start with the most basic component
-- Each step builds on the previous
+- Maximum 3 steps
+- Each step is ONE complete HTML file
 - Keep it simple"""
         result = self._call([{"role": "user", "content": prompt}], max_tokens=500)
         try:
