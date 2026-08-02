@@ -1,5 +1,4 @@
-"""Pipeline - Multi-page CMS with verification"""
-import json
+"""Pipeline - Professional multi-file CMS"""
 from pathlib import Path
 from .ai import AI
 from .tools import Tools
@@ -35,70 +34,100 @@ class Pipeline:
         return self._handle_build(message)
 
     def _handle_build(self, message):
-        """Build multi-page website with verification"""
+        """Build multi-file project"""
         log = []
 
         # ===== STEP 1: DECOMPOSE =====
-        log.append("📋 در حال تحلیل پروژه...")
+        log.append("📋 تحلیل پروژه...")
         plan = self.ai.decompose(message)
-        pages = plan.get("pages", [])
-        if not pages:
-            return {"response": "❌ Could not decompose project.", "files": [], "status": "error"}
+        files = plan.get("files", [])
+        if not files:
+            return {"response": "❌ نتوانستم پروژه را تحلیل کنم.", "files": [], "status": "error"}
 
-        log.append(f"✅ {len(pages)} صفحه پیدا شد")
-        for p in pages:
-            log.append(f"  📄 {p['filename']}: {p['title']}")
+        log.append(f"✅ ساختار پروژه:")
+        log.append(f"📁 {plan.get('project_name', 'site')}/")
+        for f in files:
+            log.append(f"  📄 {f['path']}")
 
-        # ===== STEP 2: WRITE PROJECT.MD =====
+        # ===== STEP 2: CREATE DIRECTORY STRUCTURE =====
+        log.append("\n📁 ایجاد دایرکتوری‌ها...")
+        base = self.config.output_dir / plan.get("project_name", "site")
+        for d in ["css", "js", "pages", "images"]:
+            (base / d).mkdir(parents=True, exist_ok=True)
+        log.append("✅ دایرکتوری‌ها ساخته شد")
+
+        # ===== STEP 3: WRITE PROJECT.MD =====
         log.append("\n📝 نوشتن project.md...")
-        md_content = self.ai.generate_project_md(plan)
-        self.tools.file_write("project.md", md_content)
-        log.append("✅ project.md نوشته شد")
+        md = self.ai.generate_project_md(plan)
+        (base / "project.md").write_text(md, encoding="utf-8")
+        log.append("✅ project.md")
 
-        # ===== STEP 3-5: GENERATE + VERIFY EACH PAGE =====
+        # ===== STEP 4: GENERATE CSS =====
+        log.append("\n🎨 ساخت style.css...")
+        css_code = self.ai.generate_css(plan)
+        css = self.tools.extract_css(css_code)
+        if css:
+            (base / "css" / "style.css").write_text(css, encoding="utf-8")
+            log.append(f"✅ style.css ({len(css)} bytes)")
+        else:
+            log.append("❌ style.css ساخته نشد")
+
+        # ===== STEP 5: GENERATE JS =====
+        log.append("\n⚡ ساخت main.js...")
+        js_code = self.ai.generate_js(plan)
+        js = self.tools.extract_js(js_code)
+        if js:
+            (base / "js" / "main.js").write_text(js, encoding="utf-8")
+            log.append(f"✅ main.js ({len(js)} bytes)")
+        else:
+            log.append("❌ main.js ساخته نشد")
+
+        # ===== STEP 6: GENERATE EACH HTML =====
         files_created = []
         max_attempts = 3
 
-        for page in pages:
-            filename = page["filename"]
-            log.append(f"\n🔧 ساخت {filename}...")
+        for file_info in files:
+            if file_info["type"] != "html":
+                continue
+
+            path = file_info["path"]
+            log.append(f"\n🔧 ساخت {path}...")
 
             attempt = 0
             success = False
 
             while attempt < max_attempts and not success:
                 attempt += 1
-                log.append(f"  🔄 تلاش {attempt}/{max_attempts}...")
 
-                # Generate
-                code = self.ai.generate_page(page, plan, message)
+                code = self.ai.generate_page(file_info, plan)
                 html = self.tools.extract_html(code)
 
                 if not html:
-                    log.append(f"  ❌ کد خالی برگشت")
+                    log.append(f"  ❌ تلاش {attempt}: کد خالی")
                     continue
 
                 # Verify
-                log.append(f"  🔍 تأیید...")
-                verdict = self.ai.verify_page(page, html)
+                verdict = self.ai.verify_page(file_info, html)
 
                 if "APPROVED" in verdict.upper():
-                    # Save
-                    self.tools.file_write(filename, html)
-                    files_created.append({"name": filename, "size": len(html)})
-                    log.append(f"  ✅ {filename} تأیید شد ({len(html)} bytes)")
+                    full_path = base / path
+                    full_path.parent.mkdir(parents=True, exist_ok=True)
+                    full_path.write_text(html, encoding="utf-8")
+                    files_created.append({"name": path, "size": len(html)})
+                    log.append(f"  ✅ {path} ({len(html)} bytes)")
                     success = True
                 else:
-                    reason = verdict.replace("REJECTED:", "").strip()[:100]
-                    log.append(f"  ❌ رد شد: {reason}")
+                    reason = verdict.replace("REJECTED:", "").strip()[:80]
+                    log.append(f"  ❌ تلاش {attempt}: {reason}")
 
             if not success:
-                log.append(f"  ⚠️ {filename} بعد از {max_attempts} تلاش آماده نشد")
+                log.append(f"  ⚠️ {path} آماده نشد")
 
         # ===== SUMMARY =====
         response = "\n".join(log)
         if files_created:
-            response += f"\n\n🌐 /preview/{files_created[0]['name']}"
+            main = next((f for f in files_created if "index.html" in f["name"]), files_created[0])
+            response += f"\n\n🌐 /preview/{plan.get('project_name', 'site')}/{main['name']}"
         self.memory.save_message("assistant", response)
         return {"response": response, "files": files_created, "status": "done"}
 

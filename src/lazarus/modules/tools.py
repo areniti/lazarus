@@ -75,6 +75,18 @@ class Tools:
         count = content.count(search)
         return f"OK: Replaced {count} occurrences"
 
+    def extract_js(self, response):
+        """Extract JS from AI response"""
+        if not response:
+            return None
+        match = re.search(r"```javascript\s*(.*?)```", response, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+        match = re.search(r"```js\s*(.*?)```", response, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+        return None
+
     def extract_css(self, response):
         """Extract CSS from AI response"""
         if not response:
