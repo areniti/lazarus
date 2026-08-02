@@ -75,6 +75,19 @@ class Tools:
         count = content.count(search)
         return f"OK: Replaced {count} occurrences"
 
+    def extract_css(self, response):
+        """Extract CSS from AI response"""
+        if not response:
+            return None
+        match = re.search(r"```css\s*(.*?)```", response, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+        # Try extracting from style tag
+        match = re.search(r"<style[^>]*>(.*?)</style>", response, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+        return None
+
     def extract_html(self, response):
         """Extract HTML from AI response"""
         if not response:
