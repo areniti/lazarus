@@ -88,7 +88,10 @@ def create_app():
         if not msg:
             return jsonify({"error": "empty"})
         try:
-            result = pipeline.process(msg)
+            # Reload config each time (user may have changed API settings)
+            fresh_config = Config()
+            fresh_pipeline = Pipeline(fresh_config)
+            result = fresh_pipeline.process(msg)
             return jsonify(result)
         except Exception as e:
             return jsonify({"error": str(e), "status": "error"})
