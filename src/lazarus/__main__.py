@@ -9,6 +9,9 @@ def main():
 
     config = Config()
 
+    # Always save config so credentials persist
+    config.save()
+
     # Start web server
     app = create_app()
     print()
