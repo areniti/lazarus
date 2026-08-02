@@ -225,7 +225,7 @@ RULES:
 6. Every section must have real content (not lorem ipsum)
 
 OUTPUT: ONLY HTML in a ```html block."""
-        return self._call([{"role": "user", "content": prompt}], max_tokens=2500)
+        return self._call([{"role": "user", "content": prompt}], max_tokens=4096)
 
     # ===== VERIFY =====
 
