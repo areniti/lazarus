@@ -3,27 +3,24 @@
 {% block content %}
 <h1>🌐 مدیریت API</h1>
 
-<!-- فرم اضافه کردن -->
 <div class="card">
     <h3>➕ مدل جدید اضافه کن</h3>
     <input type="text" id="new_name" placeholder="نام (مثلاً: OpenCode)">
     <input type="text" id="new_url" placeholder="Base URL (مثلاً: https://opencode.ai/zen/v1)">
     <input type="text" id="new_key" placeholder="API Key">
     <div style="display:flex;gap:8px;margin-top:8px;">
-        <button class="btn btn-blue" onclick="fetchModels()">🔍 دریافت مدل‌ها از API</button>
+        <button class="btn btn-blue" onclick="fetchModels()">🔍 دریافت مدل‌ها</button>
         <button class="btn" onclick="addModel()">💾 ذخیره مدل</button>
     </div>
     <div id="status" class="mt-1"></div>
 </div>
 
-<!-- لیست مدل‌های دریافت شده از API -->
 <div class="card" id="fetched_section" style="display:none;">
-    <h3>📋 مدل‌های موجود در این API</h3>
-    <input type="text" id="search_fetched" placeholder="جستجو بین مدل‌ها..." oninput="filterFetched()" style="margin-bottom:12px;">
+    <h3>📋 مدل‌های موجود</h3>
+    <input type="text" id="search_fetched" placeholder="جستجو..." oninput="filterFetched()" style="margin-bottom:12px;">
     <div id="fetched_list"></div>
 </div>
 
-<!-- لیست مدل‌های ذخیره شده -->
 <div class="card">
     <h3>💾 مدل‌های ذخیره شده</h3>
     <input type="text" id="search_saved" placeholder="جستجو..." oninput="filterSaved()" style="margin-bottom:12px;">
@@ -32,20 +29,21 @@
 
 <script>
 let fetchedModels = [];
+let filteredFetched = [];
 let savedModels = [];
 
-// دریافت مدل‌ها از API
 function fetchModels() {
     const url = document.getElementById('new_url').value;
     const key = document.getElementById('new_key').value;
     const status = document.getElementById('status');
     if (!url || !key) { status.innerHTML = '<span class="error">URL و Key الزامیه</span>'; return; }
-    status.innerHTML = '⏳ در حال دریافت مدل‌ها...';
+    status.innerHTML = '⏳ در حال دریافت...';
     fetch('/api/fetch-models', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({api_url:url, api_key:key})})
     .then(r=>r.json()).then(d=>{
         if (d.models && d.models.length > 0) {
             fetchedModels = d.models;
-            renderFetched(fetchedModels);
+            filteredFetched = d.models.slice();
+            renderFetched();
             document.getElementById('fetched_section').style.display = 'block';
             status.innerHTML = '<span class="success">✅ ' + d.models.length + ' مدل پیدا شد</span>';
         } else {
@@ -54,33 +52,29 @@ function fetchModels() {
     });
 }
 
-function renderFetched(models) {
+function renderFetched() {
     const box = document.getElementById('fetched_list');
-    if (!models.length) { box.innerHTML = '<p class="text-muted">مدلی پیدا نشد</p>'; return; }
-    box.innerHTML = models.map((m,i) => `
+    if (!filteredFetched.length) { box.innerHTML = '<p class="text-muted">مدلی پیدا نشد</p>'; return; }
+    box.innerHTML = filteredFetched.map((m,i) => `
         <div style="padding:8px 12px;border-bottom:1px solid #30363d;display:flex;justify-content:space-between;align-items:center;">
             <span>${m}</span>
-            <button class="btn btn-sm" onclick="selectFetched(${i})">✅ انتخاب</button>
+            <button class="btn btn-sm" onclick="selectFetchedModel('${m.replace(/'/g,"\\'")}')">✅ انتخاب</button>
         </div>
     `).join('');
 }
 
 function filterFetched() {
     const q = document.getElementById('search_fetched').value.toLowerCase();
-    const filtered = fetchedModels.filter(m => m.toLowerCase().includes(q));
-    renderFetched(filtered);
+    filteredFetched = fetchedModels.filter(m => m.toLowerCase().includes(q));
+    renderFetched();
 }
 
-// انتخاب مدل از لیست دریافتی → پر کردن فرم
-function selectFetched(i) {
-    const m = fetchedModels[i];
-    document.getElementById('new_name').value = m;
-    document.getElementById('new_status').innerHTML = '<span class="success">✅ انتخاب شد: ' + m + '</span>';
-    // اسکرول به بالا
+function selectFetchedModel(name) {
+    document.getElementById('new_name').value = name;
+    document.getElementById('status').innerHTML = '<span class="success">✅ انتخاب شد: ' + name + '</span>';
     window.scrollTo({top: 0, behavior: 'smooth'});
 }
 
-// ذخیره مدل
 function addModel() {
     const name = document.getElementById('new_name').value;
     const url = document.getElementById('new_url').value;
@@ -90,7 +84,7 @@ function addModel() {
     fetch('/api/add-model', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, url, key})})
     .then(r=>r.json()).then(d=>{
         if (d.ok) {
-            status.innerHTML = '<span class="success">✅ ذخیره شد</span>';
+            status.innerHTML = '<span class="success">✅ ذخیره شد: ' + name + '</span>';
             document.getElementById('new_name').value = '';
             loadSaved();
         } else {
@@ -99,26 +93,25 @@ function addModel() {
     });
 }
 
-// لیست مدل‌های ذخیره شده
 function loadSaved() {
     fetch('/api/models-list').then(r=>r.json()).then(d=>{
         savedModels = d.models || [];
-        renderSaved(savedModels);
+        renderSaved();
     });
 }
 
-function renderSaved(models) {
+function renderSaved() {
     const box = document.getElementById('saved_list');
-    if (!models.length) { box.innerHTML = '<p class="text-muted">مدلی ذخیره نشده</p>'; return; }
-    box.innerHTML = models.map((m,i) => `
+    if (!savedModels.length) { box.innerHTML = '<p class="text-muted">مدلی ذخیره نشده</p>'; return; }
+    box.innerHTML = savedModels.map((m,i) => `
         <div style="padding:12px;border-bottom:1px solid #30363d;display:flex;justify-content:space-between;align-items:center;">
             <div>
                 <strong>${m.name}</strong><br>
-                <span class="text-muted">${m.url}</span>
+                <span class="text-muted" style="font-size:12px;">${m.url}</span>
             </div>
             <div style="display:flex;gap:6px;">
                 <button class="btn btn-sm btn-blue" onclick="testSaved(${i})">🧪 تست</button>
-                <button class="btn btn-sm" onclick="useSaved(${i})">✅ استفاده</button>
+                <button class="btn btn-sm" onclick="useSaved(${i})">✅ فعال کردن</button>
                 <button class="btn btn-sm btn-red" onclick="removeSaved(${i})">🗑️</button>
             </div>
         </div>
@@ -128,7 +121,23 @@ function renderSaved(models) {
 function filterSaved() {
     const q = document.getElementById('search_saved').value.toLowerCase();
     const filtered = savedModels.filter(m => m.name.toLowerCase().includes(q) || m.url.toLowerCase().includes(q));
-    renderSaved(filtered);
+    const box = document.getElementById('saved_list');
+    if (!filtered.length) { box.innerHTML = '<p class="text-muted">چیزی پیدا نشد</p>'; return; }
+    box.innerHTML = filtered.map((m) => {
+        const realIndex = savedModels.indexOf(m);
+        return `
+        <div style="padding:12px;border-bottom:1px solid #30363d;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <strong>${m.name}</strong><br>
+                <span class="text-muted" style="font-size:12px;">${m.url}</span>
+            </div>
+            <div style="display:flex;gap:6px;">
+                <button class="btn btn-sm btn-blue" onclick="testSaved(${realIndex})">🧪 تست</button>
+                <button class="btn btn-sm" onclick="useSaved(${realIndex})">✅ فعال کردن</button>
+                <button class="btn btn-sm btn-red" onclick="removeSaved(${realIndex})">🗑️</button>
+            </div>
+        </div>`;
+    }).join('');
 }
 
 function testSaved(i) {
@@ -145,7 +154,7 @@ function useSaved(i) {
     const m = savedModels[i];
     fetch('/api/save-api', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({api_url:m.url, api_key:m.key, api_model:m.name})})
     .then(r=>r.json()).then(d=>{
-        document.getElementById('status').innerHTML = d.ok ? '<span class="success">✅ مدل فعال شد: ' + m.name + '</span>' : '<span class="error">❌ ' + d.error + '</span>';
+        document.getElementById('status').innerHTML = d.ok ? '<span class="success">✅ فعال شد: ' + m.name + '</span>' : '<span class="error">❌ ' + d.error + '</span>';
     });
 }
 
