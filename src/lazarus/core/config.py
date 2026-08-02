@@ -18,7 +18,7 @@ class Config:
             return json.loads(self.config_file.read_text("utf-8"))
         return {
             "username": "admin",
-            "password": self._gen_password(),
+            "password": "admin",
             "domain": "",
             "api": {"url": "", "key": "", "model": "mimo-v2.5-free"},
             "models": [],
