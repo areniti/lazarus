@@ -244,19 +244,13 @@ OUTPUT: ONLY HTML in a ```html block."""
 
     def generate_homepage(self, original_request, plan):
         """Generate ONE complete homepage with all sections"""
-        theme = plan.get("theme", {})
-        nav = []
-        for f in plan.get("files", []):
-            if f["type"] == "html" and f["path"] != "index.html":
-                nav.append(f["{f['path']}": "{f.get('page_title', f['path'].replace('.html',''))}"])
-
         prompt = f"""Create a COMPLETE homepage for a website.
 
 ORIGINAL REQUEST: {original_request}
 STYLE: Dark theme, gradient header (#667eea to #764ba2), Vazirmatn font, responsive, RTL
 
 INCLUDE ALL THESE SECTIONS IN ONE PAGE:
-1. Navigation bar with links to: {', '.join([f["path"] for f in plan.get('files', []) if f['type'] == 'html'])}
+1. Navigation bar (Home, About, Blog, Contact)
 2. Hero section with main title and description
 3. About section with info and skills
 4. Blog/Content section with post cards
@@ -266,7 +260,7 @@ INCLUDE ALL THESE SECTIONS IN ONE PAGE:
 RULES:
 1. ONE complete HTML file with ALL sections
 2. Maximum 200 lines
-3. Inline CSS (use variables from style.css)
+3. Inline CSS
 4. RTL (dir=rtl, lang="fa")
 5. Link to: <link rel="stylesheet" href="style.css">
 6. Script: <script src="main.js"></script>
