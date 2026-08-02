@@ -18,9 +18,12 @@ src/lazarus/modules/tools.py
 src/lazarus/web/__init__.py
 src/lazarus/web/app.py
 src/lazarus/web/templates/admin.html
+src/lazarus/web/templates/api_settings.html
 src/lazarus/web/templates/base.html
+src/lazarus/web/templates/chat.html
 src/lazarus/web/templates/index.html
 src/lazarus/web/templates/login.html
+src/lazarus/web/templates/settings.html
 src/lazarus/web/templates/user.html
 src/lazarus_cms.egg-info/PKG-INFO
 src/lazarus_cms.egg-info/SOURCES.txt

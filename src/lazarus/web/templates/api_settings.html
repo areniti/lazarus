@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}API - LAZARUS{% endblock %}
+{% block content %}
+<h1>🌐 مدیریت API</h1>
+
+<!-- API فعال -->
+<div class="card">
+    <h3>API فعال</h3>
+    <input type="text" id="api_url" value="{{ config.api.url }}" placeholder="API URL">
+    <input type="text" id="api_key" value="{{ config.api.key }}" placeholder="API Key">
+    <div class="row">
+        <input type="text" id="api_model" value="{{ config.api.model }}" placeholder="Model name" oninput="filterModels()">
+        <button class="btn btn-blue" onclick="fetchModels()">🔍 جستجو</button>
+        <button class="btn btn-blue" onclick="testModel()">🧪 تست</button>
+        <button class="btn" onclick="saveActiveApi()">💾 ذخیره</button>
+    </div>
+    <div id="search_results" style="background:#0d1117;border:1px solid #30363d;border-radius:8px;margin-top:8px;max-height:200px;overflow-y:auto;display:none;"></div>
+    <div id="status" class="mt-1"></div>
+</div>
+
+<!-- مدل‌های ذخیره شده -->
+<div class="card">
+    <h3>📋 مدل‌های ذخیره شده</h3>
+    <div id="models_list"></div>
+</div>
+
+<!-- افزودن مدل جدید -->
+<div class="card">
+    <h3>➕ افزودن مدل جدید</h3>
+    <input type="text" id="new_model_name" placeholder="نام مدل (مثلاً: OpenCode)">
+    <input type="text" id="new_model_url" placeholder="API URL">
+    <input type="text" id="new_model_key" placeholder="API Key">
+    <button class="btn" onclick="addModel()">افزودن</button>
+    <div id="add_status" class="mt-1"></div>
+</div>
+
+<script>
+let allModels = [];
+
+function fetchModels() {
+    const status = document.getElementById('status');
+    status.innerHTML = '⏳ در حال دریافت...';
+    fetch('/api/fetch-models', {method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({api_url:document.getElementById('api_url').value, api_key:document.getElementById('api_key').value})})
+    .then(r=>r.json()).then(d=>{
+        if(d.models && d.models.length > 0) {
+            allModels = d.models;
+            document.getElementById('api_model').value = d.models[0];
+            status.innerHTML = '<span class="success">✅ ' + d.models.length + ' مدل پیدا شد</span>';
+            filterModels();
+        } else {
+            status.innerHTML = '<span class="error">❌ ' + (d.error||'خطا') + '</span>';
+        }
+    });
+}
+
+function filterModels() {
+    const q = document.getElementById('api_model').value.toLowerCase();
+    const box = document.getElementById('search_results');
+    if (!q || allModels.length === 0) { box.style.display = 'none'; return; }
+    const matches = allModels.filter(m => m.toLowerCase().includes(q)).slice(0, 10);
+    if (matches.length === 0) { box.style.display = 'none'; return; }
+    box.innerHTML = matches.map(m => '<div style="padding:8px 12px;cursor:pointer;border-bottom:1px solid #30363d;" onclick="selectModel(\\''+m+'\\')">'+m+'</div>').join('');
+    box.style.display = 'block';
+}
+
+function selectModel(m) {
+    document.getElementById('api_model').value = m;
+    document.getElementById('search_results').style.display = 'none';
+}
+
+function testModel() {
+    const status = document.getElementById('status');
+    status.innerHTML = '⏳ تست...';
+    fetch('/api/test-model', {method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({api_url:document.getElementById('api_url').value, api_key:document.getElementById('api_key').value, model:document.getElementById('api_model').value})})
+    .then(r=>r.json()).then(d=>{
+        if(d.ok) status.innerHTML = '<span class="success">✅ ' + d.response + '</span>';
+        else status.innerHTML = '<span class="error">❌ ' + d.error + '</span>';
+    });
+}
+
+function saveActiveApi() {
+    fetch('/api/save-api', {method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({api_url:document.getElementById('api_url').value, api_key:document.getElementById('api_key').value, api_model:document.getElementById('api_model').value})})
+    .then(r=>r.json()).then(d=>{
+        document.getElementById('status').innerHTML = d.ok ? '<span class="success">✅ ذخیره شد</span>' : '<span class="error">❌ ' + d.error + '</span>';
+    });
+}
+
+function addModel() {
+    const name = document.getElementById('new_model_name').value;
+    const url = document.getElementById('new_model_url').value;
+    const key = document.getElementById('new_model_key').value;
+    const status = document.getElementById('add_status');
+    if (!name || !url || !key) { status.innerHTML = '<span class="error">همه فیلدها الزامی است</span>'; return; }
+    fetch('/api/add-model', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, url, key})})
+    .then(r=>r.json()).then(d=>{
+        if(d.ok) {
+            status.innerHTML = '<span class="success">✅ اضافه شد</span>';
+            document.getElementById('new_model_name').value = '';
+            document.getElementById('new_model_url').value = '';
+            document.getElementById('new_model_key').value = '';
+            loadModels();
+        } else {
+            status.innerHTML = '<span class="error">❌ ' + d.error + '</span>';
+        }
+    });
+}
+
+function removeModel(i) {
+    fetch('/api/remove-model', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({index:i})})
+    .then(r=>r.json()).then(()=>loadModels());
+}
+
+function selectSaved(url, key, model) {
+    document.getElementById('api_url').value = url;
+    document.getElementById('api_key').value = key;
+    document.getElementById('api_model').value = model;
+}
+
+function loadModels() {
+    fetch('/api/models-list').then(r=>r.json()).then(d=>{
+        const box = document.getElementById('models_list');
+        if (!d.models || d.models.length === 0) {
+            box.innerHTML = '<p class="text-muted">مدلی ذخیره نشده</p>';
+            return;
+        }
+        box.innerHTML = d.models.map((m,i) => '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #30363d;align-items:center;"><div><strong>'+m.name+'</strong><br><span class="text-muted">'+m.url.substring(0,30)+'...</span></div><div class="row"><button class="btn btn-sm btn-blue" onclick="selectSaved(\\''+m.url+'\\',\\''+m.key+'\\',\\''+m.name+'\\')">انتخاب</button><button class="btn btn-sm btn-red" onclick="removeModel('+i+')">حذف</button></div></div>').join('');
+    });
+}
+
+loadModels();
+</script>
+{% endblock %}

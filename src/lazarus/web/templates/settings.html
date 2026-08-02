@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}تنظیمات - LAZARUS{% endblock %}
+{% block content %}
+<h1>⚙️ تنظیمات</h1>
+
+<!-- تغییر پسورد -->
+<div class="card">
+    <h3>🔐 تغییر پسورد</h3>
+    <input type="password" id="old_pass" placeholder="پسورد فعلی">
+    <input type="password" id="new_pass" placeholder="پسورد جدید">
+    <input type="password" id="new_pass2" placeholder="تکرار پسورد جدید">
+    <button class="btn" onclick="changePassword()">ذخیره پسورد</button>
+    <div id="pass_status" class="mt-1"></div>
+</div>
+
+<!-- تغییر یوزرنیم -->
+<div class="card">
+    <h3>👤 تغییر یوزرنیم</h3>
+    <input type="password" id="user_pass" placeholder="پسورد فعلی">
+    <input type="text" id="new_user" placeholder="یوزرنیم جدید">
+    <button class="btn" onclick="changeUsername()">ذخیره یوزرنیم</button>
+    <div id="user_status" class="mt-1"></div>
+</div>
+
+<!-- تنظیمات API -->
+<div class="card">
+    <h3>🌐 تنظیمات API</h3>
+    <a href="/admin/settings/api" class="btn btn-blue">مدیریت API و مدل‌ها →</a>
+</div>
+
+<script>
+function changePassword() {
+    const old_pass = document.getElementById('old_pass').value;
+    const new_pass = document.getElementById('new_pass').value;
+    const new_pass2 = document.getElementById('new_pass2').value;
+    const status = document.getElementById('pass_status');
+    if (new_pass !== new_pass2) { status.innerHTML = '<span class="error">پسورد جدید مطابقت ندارد</span>'; return; }
+    if (new_pass.length < 4) { status.innerHTML = '<span class="error">پسورد حداقل ۴ کاراکتر</span>'; return; }
+    fetch('/api/save-password', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({old_password:old_pass, new_password:new_pass})})
+    .then(r=>r.json()).then(d=>{
+        if(d.ok) status.innerHTML = '<span class="success">✅ پسورد ذخیره شد</span>';
+        else status.innerHTML = '<span class="error">❌ ' + d.error + '</span>';
+    });
+}
+
+function changeUsername() {
+    const pass = document.getElementById('user_pass').value;
+    const new_user = document.getElementById('new_user').value;
+    const status = document.getElementById('user_status');
+    if (new_user.length < 2) { status.innerHTML = '<span class="error">یوزرنیم حداقل ۲ کاراکتر</span>'; return; }
+    fetch('/api/save-username', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pass, new_username:new_user})})
+    .then(r=>r.json()).then(d=>{
+        if(d.ok) status.innerHTML = '<span class="success">✅ یوزرنیم ذخیره شد</span>';
+        else status.innerHTML = '<span class="error">❌ ' + d.error + '</span>';
+    });
+}
+</script>
+{% endblock %}

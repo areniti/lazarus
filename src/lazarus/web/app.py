@@ -11,6 +11,13 @@ def create_app():
     config = Config()
     pipeline = Pipeline(config)
 
+    def require_login():
+        if not session.get("logged_in"):
+            return False
+        return True
+
+    # ===== PUBLIC =====
+
     @app.route("/")
     def index():
         sites = []
@@ -18,10 +25,14 @@ def create_app():
             sites = [{"name": f.stem, "file": f.name} for f in config.output_dir.glob("*.html")]
         return render_template("index.html", sites=sites)
 
-    @app.route("/logout")
-    def logout():
-        session.clear()
-        return redirect(url_for("login"))
+    @app.route("/preview/<filename>")
+    def preview(filename):
+        path = config.output_dir / filename
+        if path.exists():
+            return path.read_text("utf-8"), 200, {"Content-Type": "text/html"}
+        return "Not found", 404
+
+    # ===== AUTH =====
 
     @app.route("/admin/login", methods=["GET", "POST"])
     def login():
@@ -32,9 +43,16 @@ def create_app():
             return render_template("login.html", error="Wrong credentials")
         return render_template("login.html", error=None)
 
+    @app.route("/logout")
+    def logout():
+        session.clear()
+        return redirect(url_for("index"))
+
+    # ===== ADMIN (3 tabs: Home, Chat, Settings) =====
+
     @app.route("/admin")
     def admin():
-        if not session.get("logged_in"):
+        if not require_login():
             return redirect(url_for("login"))
         sites = []
         if config.output_dir.exists():
@@ -42,22 +60,42 @@ def create_app():
                      for f in config.output_dir.glob("*.html")]
         return render_template("admin.html", sites=sites, config=config.data)
 
-    @app.route("/admin/save-config", methods=["POST"])
-    def admin_save_config():
-        if not session.get("logged_in"):
+    @app.route("/admin/chat")
+    def admin_chat():
+        if not require_login():
+            return redirect(url_for("login"))
+        return render_template("chat.html", config=config.data)
+
+    @app.route("/admin/settings")
+    def admin_settings():
+        if not require_login():
+            return redirect(url_for("login"))
+        return render_template("settings.html", config=config.data)
+
+    @app.route("/admin/settings/api")
+    def admin_api():
+        if not require_login():
+            return redirect(url_for("login"))
+        return render_template("api_settings.html", config=config.data)
+
+    # ===== API =====
+
+    @app.route("/api/chat", methods=["POST"])
+    def api_chat():
+        if not require_login():
             return jsonify({"error": "login"})
-        data = request.get_json()
-        if data.get("api_url"): config.data["api"]["url"] = data["api_url"]
-        if data.get("api_key"): config.data["api"]["key"] = data["api_key"]
-        if data.get("api_model"): config.data["api"]["model"] = data["api_model"]
-        if data.get("username"): config.data["username"] = data["username"]
-        if data.get("password"): config.data["password"] = data["password"]
-        config.save()
-        return jsonify({"ok": True})
+        msg = request.json.get("message", "")
+        if not msg:
+            return jsonify({"error": "empty"})
+        try:
+            result = pipeline.process(msg)
+            return jsonify(result)
+        except Exception as e:
+            return jsonify({"error": str(e), "status": "error"})
 
     @app.route("/api/fetch-models", methods=["POST"])
     def api_fetch_models():
-        if not session.get("logged_in"):
+        if not require_login():
             return jsonify({"error": "login"})
         data = request.get_json()
         api_url = data.get("api_url", "")
@@ -77,7 +115,7 @@ def create_app():
 
     @app.route("/api/test-model", methods=["POST"])
     def api_test_model():
-        if not session.get("logged_in"):
+        if not require_login():
             return jsonify({"error": "login"})
         data = request.get_json()
         api_url = data.get("api_url", config.data["api"]["url"])
@@ -101,25 +139,76 @@ def create_app():
         except Exception as e:
             return jsonify({"ok": False, "error": str(e)})
 
-    @app.route("/api/chat", methods=["POST"])
-    def api_chat():
-        if not session.get("logged_in"):
+    @app.route("/api/save-password", methods=["POST"])
+    def api_save_password():
+        if not require_login():
             return jsonify({"error": "login"})
-        msg = request.json.get("message", "")
-        if not msg:
-            return jsonify({"error": "empty"})
-        try:
-            result = pipeline.process(msg)
-            return jsonify(result)
-        except Exception as e:
-            return jsonify({"error": str(e), "status": "error"})
+        data = request.get_json()
+        old_pass = data.get("old_password", "")
+        new_pass = data.get("new_password", "")
+        if not config.login(config.data["username"], old_pass):
+            return jsonify({"error": "Wrong current password"})
+        if not new_pass or len(new_pass) < 4:
+            return jsonify({"error": "Password must be at least 4 characters"})
+        config.data["password"] = new_pass
+        config.save()
+        return jsonify({"ok": True})
 
-    @app.route("/preview/<filename>")
-    def preview(filename):
-        path = config.output_dir / filename
-        if path.exists():
-            return path.read_text("utf-8"), 200, {"Content-Type": "text/html"}
-        return "Not found", 404
+    @app.route("/api/save-username", methods=["POST"])
+    def api_save_username():
+        if not require_login():
+            return jsonify({"error": "login"})
+        data = request.get_json()
+        old_pass = data.get("password", "")
+        new_user = data.get("new_username", "")
+        if not config.login(config.data["username"], old_pass):
+            return jsonify({"error": "Wrong password"})
+        if not new_user or len(new_user) < 2:
+            return jsonify({"error": "Username must be at least 2 characters"})
+        config.data["username"] = new_user
+        config.save()
+        return jsonify({"ok": True})
+
+    @app.route("/api/save-api", methods=["POST"])
+    def api_save_api():
+        if not require_login():
+            return jsonify({"error": "login"})
+        data = request.get_json()
+        if data.get("api_url"): config.data["api"]["url"] = data["api_url"]
+        if data.get("api_key"): config.data["api"]["key"] = data["api_key"]
+        if data.get("api_model"): config.data["api"]["model"] = data["api_model"]
+        config.save()
+        return jsonify({"ok": True})
+
+    @app.route("/api/add-model", methods=["POST"])
+    def api_add_model():
+        if not require_login():
+            return jsonify({"error": "login"})
+        data = request.get_json()
+        name = data.get("name", "")
+        url = data.get("url", "")
+        key = data.get("key", "")
+        if not name or not url or not key:
+            return jsonify({"error": "Name, URL, and Key are required"})
+        config.add_model(name, url, key)
+        return jsonify({"ok": True})
+
+    @app.route("/api/remove-model", methods=["POST"])
+    def api_remove_model():
+        if not require_login():
+            return jsonify({"error": "login"})
+        data = request.get_json()
+        index = data.get("index", -1)
+        config.remove_model(index)
+        return jsonify({"ok": True})
+
+    @app.route("/api/models-list")
+    def api_models_list():
+        if not require_login():
+            return jsonify({"error": "login"})
+        return jsonify({"models": config.data.get("models", [])})
+
+    # ===== USER =====
 
     @app.route("/user")
     def user_page():
