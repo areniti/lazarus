@@ -66,6 +66,7 @@ class Pipeline:
             else:
                 html_parts.append(html)
 
+            self.state.verify_step(i)
             self.state.complete_step(i, {"path": f"section_{i}.html", "name": section["name"]})
 
         final_html = self._merge_all(css_parts, html_parts, message)
