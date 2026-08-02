@@ -243,31 +243,24 @@ OUTPUT: ONLY HTML in a ```html block."""
     # ===== GENERATE HOMEPAGE =====
 
     def generate_homepage(self, original_request, plan):
-        """Generate ONE complete homepage with all sections"""
-        prompt = f"""Create a COMPLETE homepage for a website.
+        """Generate ONE complete homepage"""
+        prompt = f"""Create a COMPLETE, FUNCTIONAL HTML page for this request:
 
-ORIGINAL REQUEST: {original_request}
-STYLE: Dark theme, gradient header (#667eea to #764ba2), Vazirmatn font, responsive, RTL
-
-INCLUDE ALL THESE SECTIONS IN ONE PAGE:
-1. Navigation bar (Home, About, Blog, Contact)
-2. Hero section with main title and description
-3. About section with info and skills
-4. Blog/Content section with post cards
-5. Contact section with form or info
-6. Footer
+"{original_request}"
 
 RULES:
-1. ONE complete HTML file with ALL sections
-2. Maximum 200 lines
-3. Inline CSS
+1. ONE complete, self-contained HTML file
+2. ALL functionality must work (buttons, forms, games, etc)
+3. Modern dark theme design
 4. RTL (dir=rtl, lang="fa")
-5. Link to: <link rel="stylesheet" href="style.css">
-6. Script: <script src="main.js"></script>
-7. Every section must have REAL content (not lorem ipsum)
-8. Modern dark design
+5. Include ALL needed CSS inline in a <style> tag
+6. Include ALL needed JavaScript inline in a <script> tag
+7. Vazirmatn font: https://fonts.googleapis.com/css2?family=Vazirmatn
+8. Real content, NOT lorem ipsum
+9. Make it look professional and polished
+10. EVERY feature the user asked for must be implemented and working
 
-OUTPUT: ONLY HTML in a ```html block."""
+OUTPUT: ONLY the HTML code in a ```html block. No explanation."""
         return self._call([{"role": "user", "content": prompt}], max_tokens=4096)
 
     # ===== VERIFY =====
