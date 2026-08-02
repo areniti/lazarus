@@ -165,7 +165,7 @@ Include:
 - Dark theme
 
 OUTPUT: ONLY CSS in a ```css block. Minimum 100 lines."""
-        return self._call([{"role": "user", "content": prompt}], max_tokens=2000)
+        return self._call([{"role": "user", "content": prompt}], max_tokens=4096)
 
     # ===== STEP 4: GENERATE JS =====
 
