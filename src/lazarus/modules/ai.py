@@ -121,7 +121,17 @@ RULES:
                 return json.loads(match.group())
         except (json.JSONDecodeError, TypeError):
             pass
-        return {"project_name": "website", "theme": {}, "files": []}
+        # Fallback: create basic structure
+        return {
+            "project_name": "my-website",
+            "theme": {"primary_color": "#667eea", "secondary_color": "#764ba2", "bg_color": "#0d1117", "text_color": "#e6edf3", "font": "Vazirmatn"},
+            "files": [
+                {"path": "css/style.css", "type": "css", "description": "Dark theme stylesheet with gradient colors, responsive grid, Vazirmatn font"},
+                {"path": "js/main.js", "type": "js", "description": "Navigation toggle, smooth scroll, form validation"},
+                {"path": "index.html", "type": "html", "page_title": "Home", "description": "Main page with hero section and navigation", "sections": ["hero", "nav"], "links_to": ["pages/about.html"]},
+                {"path": "pages/about.html", "type": "html", "page_title": "About", "description": "About page with skills and info", "sections": ["intro", "skills"], "links_to": ["../index.html"]}
+            ]
+        }
 
     # ===== STEP 2: GENERATE PROJECT.MD =====
 
