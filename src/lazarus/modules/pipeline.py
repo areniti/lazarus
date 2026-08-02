@@ -121,7 +121,7 @@ class Pipeline:
         response = "\n".join(log)
         if files_created:
             main = next((f for f in files_created if "index.html" in f["name"]), files_created[0])
-            response += f"\n\n🌐 /preview/{plan.get('project_name', 'site')}/{main['name']}"
+            response += f"\n\n🌐 /preview/{main['name']}"
         self.memory.save_message("assistant", response)
         return {"response": response, "files": files_created, "status": "done"}
 
