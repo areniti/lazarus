@@ -20,10 +20,11 @@ def create_app():
 
     @app.route("/")
     def index():
-        sites = []
         if config.output_dir.exists():
-            sites = [{"name": f.stem, "file": f.name} for f in config.output_dir.rglob("*.html")]
-        return render_template("index.html", sites=sites)
+            index_file = config.output_dir / "index.html"
+            if index_file.exists():
+                return index_file.read_text("utf-8"), 200, {"Content-Type": "text/html"}
+        return render_template("index.html", sites=[])
 
     @app.route("/preview/<path:filename>")
     def preview(filename):
