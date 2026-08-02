@@ -1,4 +1,4 @@
-"""AI - Professional CMS with multi-page support"""
+"""AI - Multi-page CMS with verification"""
 import requests
 import json
 import re
@@ -25,8 +25,7 @@ class AI:
             result = r.json()
             if "choices" not in result:
                 return f"ERROR: {json.dumps(result)[:200]}"
-            content = result["choices"][0]["message"]["content"]
-            return content if content else "No response"
+            return result["choices"][0]["message"]["content"] or "No response"
         except requests.Timeout:
             return "ERROR: Timeout"
         except Exception as e:
@@ -38,90 +37,124 @@ class AI:
                        "ممنون", "thanks", "ok", "باشه", "بله", "نه"]
         if msg in chat_words or len(msg.split()) <= 2:
             return "chat"
-        has_existing = (Path.home() / ".lazarus" / "output" / "index.html").exists()
-        edit_words = ["ادیت", "تغییر", "عوض کن", "ترمیم", "ویرایش",
-                       "edit", "change", "update", "modify", "رنگ", "فونت"]
-        if has_existing and any(kw in msg for kw in edit_words):
-            return "edit"
         return "build"
 
-    def plan_pages(self, message):
-        """AI decides which pages to create"""
-        prompt = f"""You are a web developer planning a website.
+    # ===== STEP 1: DECOMPOSE =====
 
-USER REQUEST: {message}
+    def decompose(self, message):
+        """Break request into independent pages with descriptions"""
+        prompt = f"""You are a web architect. Decompose this request into independent pages.
 
-Create a list of HTML pages for this website.
-Each page must be a SEPARATE .html file.
-Maximum 5 pages. Maximum 80 lines per page.
+REQUEST: {message}
+
+Create a project plan as JSON. Each page is independent.
 
 Reply ONLY in JSON:
-[{{"name": "index.html", "description": "Main page with hero section and navigation", "is_main": true}}, {{"name": "about.html", "description": "About me page with skills and experience", "is_main": false}}]
+{{
+  "project_name": "name",
+  "pages": [
+    {{
+      "filename": "index.html",
+      "title": "Home",
+      "description": "Main page with hero section, navigation bar at top, featured content, and footer. Shows the main message of the site.",
+      "inputs": ["none"],
+      "outputs": ["HTML page"]
+    }},
+    {{
+      "filename": "about.html",
+      "title": "About",
+      "description": "About page with personal info, skills list, experience timeline, and contact form.",
+      "inputs": ["none"],
+      "outputs": ["HTML page"]
+    }}
+  ]
+}}
 
 RULES:
-- First page is always the main page (index.html)
-- Each page is COMPLETE on its own (has header, nav, footer, CSS)
-- ALL pages share the same color scheme and font
-- Navigation links between pages must be REAL (href="about.html")
-- Use inline CSS, no external files
-- RTL (dir=rtl, lang=fa), Vazirmatn font
-- Responsive design
-- Modern dark theme"""
-        result = self._call([{"role": "user", "content": prompt}], max_tokens=1000)
+- 3-5 pages maximum
+- Each page is COMPLETE and independent
+- All pages share navigation bar
+- First page is always index.html
+- Include inputs/outputs for each page
+- RTL, dark theme, Vazirmatn font"""
+        result = self._call([{"role": "user", "content": prompt}], max_tokens=1500)
         try:
-            match = re.search(r"\[.*\]", result, re.DOTALL)
+            match = re.search(r"\{.*\}", result, re.DOTALL)
             if match:
-                pages = json.loads(match.group())
-                return pages
+                return json.loads(match.group())
         except (json.JSONDecodeError, TypeError):
             pass
-        return [{"name": "index.html", "description": message, "is_main": True}]
+        return {"project_name": "website", "pages": [
+            {"filename": "index.html", "title": "Home", "description": message,
+             "inputs": ["none"], "outputs": ["HTML page"]}
+        ]}
 
-    def generate_page(self, page, all_pages, original_request):
-        """Generate ONE complete page"""
-        nav_links = ""
-        for p in all_pages:
-            nav_links += f"- {p['name']}: {p['description']}\n"
+    # ===== STEP 2: GENERATE PROJECT.MD =====
 
-        prompt = f"""You are building page "{page['name']}" for a website.
+    def generate_project_md(self, plan):
+        """Generate project.md description file"""
+        lines = [f"# {plan['project_name']}\n"]
+        lines.append(f"Generated: {plan.get('project_name', 'website')}\n")
+        lines.append("---\n")
+        for i, page in enumerate(plan["pages"], 1):
+            lines.append(f"## {i}. {page['filename']} - {page['title']}\n")
+            lines.append(f"**Description:** {page['description']}\n")
+            lines.append(f"**Inputs:** {', '.join(page.get('inputs', ['none']))}\n")
+            lines.append(f"**Outputs:** {', '.join(page.get('outputs', ['HTML page']))}\n")
+            lines.append(f"**Status:** pending\n")
+            lines.append("---\n")
+        return "\n".join(lines)
+
+    # ===== STEP 3: GENERATE EACH PAGE =====
+
+    def generate_page(self, page, plan, original_request):
+        """Generate ONE page based on its description"""
+        all_pages = "\n".join([
+            f"- {p['filename']}: {p['description']}" for p in plan["pages"]
+        ])
+
+        prompt = f"""You are building page "{page['filename']}" for a website.
 
 ORIGINAL REQUEST: {original_request}
 THIS PAGE: {page['description']}
-ALL PAGES IN THIS SITE:
-{nav_links}
-STYLE: Dark theme, gradient header (#667eea to #764ba2), Vazirmatn font, responsive
+ALL PAGES:
+{all_pages}
+
+STYLE: Dark theme, gradient header (#667eea to #764ba2), Vazirmatn font, responsive, RTL
 
 RULES:
 1. Write ONLY this one page
-2. Maximum 80 lines of HTML
-3. Include navigation bar that links to ALL other pages
+2. Maximum 100 lines
+3. Include navigation bar linking to ALL other pages
 4. Include header, main content, and footer
-5. Use inline CSS
-6. Navigation: <a href="pagename.html">link text</a>
-7. This page must be COMPLETE and self-contained
-8. RTL support (dir=rtl, lang="fa")
+5. Navigation: <a href="filename.html">Title</a>
+6. This page must be COMPLETE
+7. Inline CSS only
 
-OUTPUT: ONLY the HTML code in a ```html block. No explanations."""
+OUTPUT: ONLY the HTML code in a ```html block."""
         return self._call([{"role": "user", "content": prompt}], max_tokens=2000)
 
-    def generate_theme(self, original_request):
-        """Generate a shared CSS theme"""
-        prompt = f"""You are creating a CSS theme for a website.
+    # ===== STEP 4: VERIFY =====
 
-REQUEST: {original_request}
+    def verify_page(self, page, code):
+        """Ask AI if the generated code matches the description"""
+        prompt = f"""You are a code reviewer. Check if this HTML matches the requirements.
 
-Create a SHORT CSS theme (max 30 lines).
-Include: colors, fonts, spacing, responsive breakpoints.
-Dark theme, gradient header, Vazirmatn font.
+REQUIREMENTS: {page['description']}
+PAGE NAME: {page['filename']}
 
-OUTPUT: ONLY CSS in a ```css block."""
-        return self._call([{"role": "user", "content": prompt}], max_tokens=800)
+CODE:
+```html
+{code}
+```
 
-    def chat(self, message, history):
-        messages = [{"role": "system", "content": "You are Lazarus, a friendly AI assistant. Reply concisely in the same language as the user."}]
-        messages.extend(history)
-        messages.append({"role": "user", "content": message})
-        return self._call(messages)
+Does this code match the requirements?
+Reply with ONLY:
+- "APPROVED" if it matches
+- "REJECTED: [reason]" if it doesn't match"""
+        return self._call([{"role": "user", "content": prompt}], max_tokens=200)
+
+    # ===== STEP 5: EDIT =====
 
     def edit(self, current_code, instruction):
         prompt = f"""Edit this HTML:
@@ -135,3 +168,11 @@ CODE:
 
 Reply with ONLY the edited code in a ```html block."""
         return self._call([{"role": "user", "content": prompt}], max_tokens=4000)
+
+    # ===== CHAT =====
+
+    def chat(self, message, history):
+        messages = [{"role": "system", "content": "You are Lazarus, a friendly AI assistant. Reply concisely in the same language as the user."}]
+        messages.extend(history)
+        messages.append({"role": "user", "content": message})
+        return self._call(messages)
