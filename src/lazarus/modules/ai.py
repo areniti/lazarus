@@ -179,7 +179,7 @@ Include:
 - Active nav link highlight
 
 OUTPUT: ONLY JavaScript in a ```javascript block."""
-        return self._call([{"role": "user", "content": prompt}], max_tokens=1500)
+        return self._call([{"role": "user", "content": prompt}], max_tokens=4096)
 
     # ===== STEP 5: GENERATE EACH HTML PAGE =====
 
