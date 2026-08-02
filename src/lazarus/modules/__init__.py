@@ -1,7 +1,6 @@
 """Modules - CPU-like building blocks"""
 from .ai import AI
-from .state import StateRegister
-from .executor import Executor
+from .tools import Tools
 from .pipeline import Pipeline
 
-__all__ = ["AI", "StateRegister", "Executor", "Pipeline"]
+__all__ = ["AI", "Tools", "Pipeline"]

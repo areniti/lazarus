@@ -14,6 +14,7 @@ src/lazarus/modules/executor.py
 src/lazarus/modules/pipeline.py
 src/lazarus/modules/planner.py
 src/lazarus/modules/state.py
+src/lazarus/modules/tools.py
 src/lazarus/web/__init__.py
 src/lazarus/web/app.py
 src/lazarus/web/templates/admin.html

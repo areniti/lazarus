@@ -1,153 +1,64 @@
 {% extends "base.html" %}
-{% block title %}Admin - Lazarus{% endblock %}
+{% block title %}Admin{% endblock %}
 {% block content %}
-<h1>⚙️ پنل ادمین</h1>
+<h1>Admin Panel</h1>
 
-<!-- API Settings -->
 <div class="card">
-    <h3 style="color: #58a6ff;">🌐 تنظیمات API</h3>
-    <label style="color:#8b949e;font-size:12px;">API URL</label>
-    <input type="text" id="api_url" value="{{ config.api.url }}" placeholder="https://example.com/v1">
-    <label style="color:#8b949e;font-size:12px;">API Key</label>
-    <input type="text" id="api_key" value="{{ config.api.key }}" placeholder="sk-...">
-    <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <button class="btn btn-blue" onclick="fetchModels()" id="fetchBtn">🔍 دریافت مدل‌ها</button>
-        <button class="btn" onclick="saveApi()">💾 ذخیره</button>
-    </div>
-    <div id="apiStatus" style="font-size:12px;margin-bottom:8px;"></div>
-    <label style="color:#8b949e;font-size:12px;">مدل فعال</label>
-    <input type="text" id="modelSearch" placeholder="🔍 جستجوی مدل..." oninput="filterModels()" style="margin-bottom:4px;">
-    <select id="api_model" size="6" style="width:100%;background:#0d1117;border:1px solid #30363d;border-radius:8px;color:#e6edf3;font-family:inherit;font-size:13px;padding:8px;">
-        {% if config.api.model %}
-        <option value="{{ config.api.model }}" selected>{{ config.api.model }}</option>
-        {% endif %}
+    <h3>API Settings</h3>
+    <input type="text" id="api_url" value="{{ config.api.url }}" placeholder="API URL">
+    <input type="text" id="api_key" value="{{ config.api.key }}" placeholder="API Key">
+    <select id="api_model">
+        {% if config.api.model %}<option value="{{ config.api.model }}" selected>{{ config.api.model }}</option>{% endif %}
     </select>
-    <button class="btn btn-blue" onclick="testModel()" id="testBtn" style="margin-top:8px;">🧪 تست مدل</button>
-    <div id="testStatus" style="font-size:12px;margin-top:4px;"></div>
-</div>
-
-<!-- Role -->
-<div class="card">
-    <h3 style="color:#58a6ff;">👤 نقش</h3>
-    <p style="color:#8b949e;font-size:12px;margin-bottom:8px;">Developer: ساخت سایت | Admin: تنظیمات</p>
-    <div style="display:flex;gap:8px;">
-        <button class="btn {% if config.role != 'admin' %}btn-blue{% endif %}" onclick="setRole('developer')" id="roleDev">🔨 Developer</button>
-        <button class="btn {% if config.role == 'admin' %}btn-blue{% endif %}" onclick="setRole('admin')" id="roleAdmin">⚙️ Admin</button>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-blue" onclick="fetchModels()" id="fetchBtn">Get Models</button>
+        <button class="btn" onclick="saveConfig()">Save</button>
     </div>
-    <div id="roleStatus" style="font-size:12px;margin-top:8px;"></div>
+    <div id="status" style="font-size:12px;margin-top:8px;"></div>
 </div>
 
-<!-- Account -->
 <div class="card">
-    <h3 style="color:#58a6ff;">🔑 حساب کاربری</h3>
-    <label style="color:#8b949e;font-size:12px;">Username</label>
-    <input type="text" id="username" value="{{ config.username }}">
-    <label style="color:#8b949e;font-size:12px;">Password</label>
-    <input type="password" id="password" placeholder="留空保持当前密码">
-    <button class="btn" onclick="saveAccount()">💾 ذخیره</button>
-    <div id="accountStatus" style="font-size:12px;margin-top:8px;"></div>
-</div>
-
-<!-- Status -->
-<div class="card">
-    <h3 style="color:#58a6ff;">📊 وضعیت</h3>
-    <p style="color:#8b949e;">
-        وضعیت: <span class="badge badge-green">{{ progress.status }}</span>
-        | پیشرفت: {{ progress.done }}/{{ progress.total }} ({{ progress.percent|int }}%)
-    </p>
-</div>
-
-<!-- Chat -->
-<div class="card">
-    <h3 style="color:#58a6ff;">💬 چت</h3>
+    <h3>Chat</h3>
     <div id="chat" style="height:300px;overflow-y:auto;padding:12px;background:#0d1117;border-radius:8px;margin:12px 0;"></div>
     <div style="display:flex;gap:8px;">
-        <input type="text" id="msg" placeholder="پیام..." style="margin:0;flex:1;" onkeydown="if(event.key=='Enter')sendMsg()">
-        <button class="btn" onclick="sendMsg()">ارسال</button>
+        <input type="text" id="msg" placeholder="Type..." style="margin:0;flex:1;" onkeydown="if(event.key==='Enter')sendMsg()">
+        <button class="btn" onclick="sendMsg()">Send</button>
     </div>
 </div>
 
-<!-- Sites -->
 <div class="card">
-    <h3 style="color:#58a6ff;">📁 سایت‌ها ({{ sites|length }})</h3>
+    <h3>Sites ({{ sites|length }})</h3>
     {% for site in sites %}
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #30363d;">
-        <span>{{ site.name }} <span style="color:#8b949e;font-size:12px;">({{ (site.size / 1024)|round(1) }}KB)</span></span>
-        <a href="/preview/{{ site.file }}" target="_blank" class="btn" style="padding:4px 12px;">👁️</a>
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #30363d;">
+        <span>{{ site.name }}</span>
+        <a href="/preview/{{ site.file }}" target="_blank" class="btn" style="padding:4px 12px;">View</a>
     </div>
     {% endfor %}
-    {% if not sites %}<p style="color:#8b949e;">خالی</p>{% endif %}
+    {% if not sites %}<p style="color:#8b949e;">No sites yet</p>{% endif %}
 </div>
 
 <script>
-let allModels = [];
-
 function fetchModels() {
-    const btn = document.getElementById('fetchBtn');
-    const status = document.getElementById('apiStatus');
-    const url = document.getElementById('api_url').value;
-    const key = document.getElementById('api_key').value;
-    if (!url || !key) { status.innerHTML = '<span style="color:#f85149;">URL و Key رو پر کن</span>'; return; }
-    btn.disabled = true; btn.textContent = '⏳...';
-    fetch('/api/fetch-models', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({api_url:url, api_key:key})})
-    .then(r => r.json()).then(data => {
-        btn.disabled = false; btn.textContent = '🔍 دریافت مدل‌ها';
-        if (data.models && data.models.length > 0) {
-            allModels = data.models;
-            renderModels(data.models);
-            status.innerHTML = '<span style="color:#3fb950;">✅ ' + data.models.length + ' مدل</span>';
-        } else {
-            status.innerHTML = '<span style="color:#f85149;">خطا: ' + (data.error||'خالی') + '</span>';
-        }
-    }).catch(err => { btn.disabled=false; btn.textContent='🔍 دریافت مدل‌ها'; status.innerHTML='<span style="color:#f85149;">'+err+'</span>'; });
-}
-
-function renderModels(models) {
-    const sel = document.getElementById('api_model');
-    sel.innerHTML = '';
-    models.forEach(m => { const o = document.createElement('option'); o.value = m; o.textContent = m; sel.appendChild(o); });
-}
-
-function filterModels() {
-    const q = document.getElementById('modelSearch').value.toLowerCase();
-    const filtered = allModels.filter(m => m.toLowerCase().includes(q));
-    renderModels(filtered);
-}
-
-function saveApi() {
-    const status = document.getElementById('apiStatus');
-    fetch('/admin/save-api', {method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({api_url:document.getElementById('api_url').value, api_key:document.getElementById('api_key').value, api_model:document.getElementById('api_model').value})})
-    .then(r=>r.json()).then(d=>{ status.innerHTML='<span style="color:#3fb950;">✅ '+d.msg+'</span>'; });
-}
-
-function testModel() {
-    const btn = document.getElementById('testBtn');
-    const status = document.getElementById('testStatus');
-    btn.disabled=true; btn.textContent='⏳...';
-    fetch('/api/test-model', {method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({api_url:document.getElementById('api_url').value, api_key:document.getElementById('api_key').value, model:document.getElementById('api_model').value})})
-    .then(r=>r.json()).then(data=>{
-        btn.disabled=false; btn.textContent='🧪 تست مدل';
-        if(data.ok) status.innerHTML='<span style="color:#3fb950;">✅ '+data.response+'</span>';
-        else status.innerHTML='<span style="color:#f85149;">❌ '+data.error+'</span>';
-    });
-}
-
-function setRole(role) {
-    fetch('/admin/save-role', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({role:role})})
+    const status = document.getElementById('status');
+    status.textContent = 'Loading...';
+    fetch('/api/fetch-models', {method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({api_url:document.getElementById('api_url').value, api_key:document.getElementById('api_key').value})})
     .then(r=>r.json()).then(d=>{
-        document.getElementById('roleStatus').innerHTML='<span style="color:#3fb950;">✅ '+d.msg+' ('+role+')</span>';
-        document.getElementById('roleDev').className = role==='developer' ? 'btn btn-blue' : 'btn';
-        document.getElementById('roleAdmin').className = role==='admin' ? 'btn btn-blue' : 'btn';
+        if(d.models && d.models.length > 0) {
+            const sel = document.getElementById('api_model');
+            sel.innerHTML = '';
+            d.models.forEach(m => { const o = document.createElement('option'); o.value = m; o.textContent = m; sel.appendChild(o); });
+            status.innerHTML = '<span style="color:#3fb950;">' + d.models.length + ' models</span>';
+        } else {
+            status.innerHTML = '<span style="color:#f85149;">Error: ' + (d.error||'none') + '</span>';
+        }
     });
 }
 
-function saveAccount() {
-    const status = document.getElementById('accountStatus');
-    fetch('/admin/save-account', {method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({username:document.getElementById('username').value, password:document.getElementById('password').value})})
-    .then(r=>r.json()).then(d=>{ status.innerHTML='<span style="color:#3fb950;">✅ '+d.msg+'</span>'; });
+function saveConfig() {
+    fetch('/admin/save-config', {method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({api_url:document.getElementById('api_url').value, api_key:document.getElementById('api_key').value, api_model:document.getElementById('api_model').value})})
+    .then(r=>r.json()).then(d=>{ document.getElementById('status').innerHTML='<span style="color:#3fb950;">Saved!</span>'; });
 }
 
 function sendMsg() {
@@ -155,19 +66,18 @@ function sendMsg() {
     const chat = document.getElementById('chat');
     const msg = input.value.trim();
     if (!msg) return;
-    chat.innerHTML += '<div style="margin:8px 0;"><span style="background:#1f6feb;padding:8px 12px;border-radius:8px;display:inline-block;max-width:80%;">'+msg+'</span></div>';
-    chat.innerHTML += '<div id="loading" style="margin:8px 0;text-align:right;"><span style="background:#21262d;padding:8px 12px;border-radius:8px;display:inline-block;color:#8b949e;">⏳ داره فکر میکنه...</span></div>';
+    chat.innerHTML += '<div style="margin:8px 0;"><span style="background:#1f6feb;padding:8px 12px;border-radius:8px;">'+msg+'</span></div>';
+    chat.innerHTML += '<div id="loading" style="margin:8px 0;text-align:right;"><span style="background:#21262d;padding:8px 12px;border-radius:8px;color:#8b949e;">Thinking...</span></div>';
     input.value = ''; chat.scrollTop = chat.scrollHeight;
     fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:msg})})
     .then(r=>r.json()).then(data=>{
         document.getElementById('loading')?.remove();
         let r = data.error || data.response || JSON.stringify(data);
-        chat.innerHTML += '<div style="margin:8px 0;text-align:right;"><span style="background:#21262d;padding:8px 12px;border-radius:8px;display:inline-block;max-width:80%;white-space:pre-wrap;">'+r+'</span></div>';
+        chat.innerHTML += '<div style="margin:8px 0;text-align:right;"><span style="background:#21262d;padding:8px 12px;border-radius:8px;white-space:pre-wrap;">'+r+'</span></div>';
         chat.scrollTop = chat.scrollHeight;
     }).catch(err=>{
         document.getElementById('loading')?.remove();
-        chat.innerHTML += '<div style="margin:8px 0;text-align:right;"><span style="background:#da3633;padding:8px 12px;border-radius:8px;">❌ '+err+'</span></div>';
-        chat.scrollTop = chat.scrollHeight;
+        chat.innerHTML += '<div style="margin:8px 0;text-align:right;"><span style="background:#da3633;padding:8px 12px;border-radius:8px;">Error: '+err+'</span></div>';
     });
 }
 </script>
