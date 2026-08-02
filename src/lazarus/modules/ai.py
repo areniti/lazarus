@@ -19,7 +19,7 @@ class AI:
         headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
         data = {"model": self.model, "messages": messages, "max_tokens": max_tokens}
         try:
-            r = requests.post(url, headers=headers, json=data, timeout=180)
+            r = requests.post(url, headers=headers, json=data, timeout=300)
             if r.status_code != 200:
                 return f"ERROR: HTTP {r.status_code}"
             result = r.json()
@@ -108,7 +108,7 @@ Create a COMPLETE project structure as JSON:
 RULES:
 - Always include css/style.css and js/main.js
 - Always include index.html + pages/*.html
-- 3-5 HTML pages total
+- 2-3 HTML pages total
 - All HTML pages link to shared CSS and JS
 - Pages in pages/ use relative paths (../css/style.css)
 - Navigation bar on every page linking to all pages"""
