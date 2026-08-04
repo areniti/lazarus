@@ -1,4 +1,5 @@
 """Web Application - Flask UI"""
+import os
 import requests
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from ..core.config import Config
@@ -26,16 +27,6 @@ def create_app():
                 return index_file.read_text("utf-8"), 200, {"Content-Type": "text/html"}
         return render_template("index.html", sites=[])
 
-    @app.route("/<path:filename>")
-    def serve_file(filename):
-        path = config.output_dir / filename
-        if path.exists() and path.is_file():
-            ext = path.suffix.lower()
-            content_types = {".css": "text/css", ".js": "application/javascript", ".html": "text/html", ".png": "image/png", ".jpg": "image/jpeg", ".svg": "image/svg+xml"}
-            ct = content_types.get(ext, "text/plain")
-            return path.read_text("utf-8") if ext in [".css", ".js", ".html"] else path.read_bytes(), 200, {"Content-Type": ct}
-        return "Not found", 404
-
     # ===== AUTH =====
 
     @app.route("/admin/login", methods=["GET", "POST"])
@@ -52,7 +43,7 @@ def create_app():
         session.clear()
         return redirect(url_for("index"))
 
-    # ===== ADMIN (3 tabs: Home, Chat, Settings) =====
+    # ===== ADMIN =====
 
     @app.route("/admin")
     def admin():
@@ -92,7 +83,6 @@ def create_app():
         if not msg:
             return jsonify({"error": "empty"})
         try:
-            # Reload config each time (user may have changed API settings)
             fresh_config = Config()
             fresh_pipeline = Pipeline(fresh_config)
             result = fresh_pipeline.process(msg)
@@ -230,5 +220,19 @@ def create_app():
         if config.output_dir.exists():
             sites = [{"name": f.stem, "file": f.name} for f in config.output_dir.rglob("*.html")]
         return render_template("index.html", sites=sites)
+
+    # ===== STATIC FILES (LAST - catch-all) =====
+
+    @app.route("/<path:filename>")
+    def serve_file(filename):
+        path = config.output_dir / filename
+        if path.exists() and path.is_file():
+            ext = path.suffix.lower()
+            content_types = {".css": "text/css", ".js": "application/javascript", ".html": "text/html", ".png": "image/png", ".jpg": "image/jpeg", ".svg": "image/svg+xml"}
+            ct = content_types.get(ext, "text/plain")
+            if ext in [".css", ".js", ".html"]:
+                return path.read_text("utf-8"), 200, {"Content-Type": ct}
+            return path.read_bytes(), 200, {"Content-Type": ct}
+        return "Not found", 404
 
     return app
