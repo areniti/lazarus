@@ -26,11 +26,14 @@ def create_app():
                 return index_file.read_text("utf-8"), 200, {"Content-Type": "text/html"}
         return render_template("index.html", sites=[])
 
-    @app.route("/preview/<path:filename>")
-    def preview(filename):
+    @app.route("/<path:filename>")
+    def serve_file(filename):
         path = config.output_dir / filename
-        if path.exists():
-            return path.read_text("utf-8"), 200, {"Content-Type": "text/html"}
+        if path.exists() and path.is_file():
+            ext = path.suffix.lower()
+            content_types = {".css": "text/css", ".js": "application/javascript", ".html": "text/html", ".png": "image/png", ".jpg": "image/jpeg", ".svg": "image/svg+xml"}
+            ct = content_types.get(ext, "text/plain")
+            return path.read_text("utf-8") if ext in [".css", ".js", ".html"] else path.read_bytes(), 200, {"Content-Type": ct}
         return "Not found", 404
 
     # ===== AUTH =====
