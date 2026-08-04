@@ -76,6 +76,15 @@ class Pipeline:
         html_code = self.ai.generate_homepage(message, plan)
         html = self.tools.extract_html(html_code)
         if html:
+            # Ensure CSS link exists
+            if 'style.css' not in html:
+                html = html.replace('<head>', '<head>\n    <link rel="stylesheet" href="style.css">', 1)
+            # Ensure JS link exists
+            if 'main.js' not in html:
+                html = html.replace('</body>', '    <script src="main.js"></script>\n</body>', 1)
+            # Ensure closing tags
+            if '</html>' not in html:
+                html += '\n</html>'
             (output / "index.html").write_text(html, encoding="utf-8")
             log.append(f"✅ index.html ({len(html)} bytes)")
         else:

@@ -249,18 +249,16 @@ OUTPUT: ONLY HTML in a ```html block."""
 "{original_request}"
 
 RULES:
-1. ONE complete, self-contained HTML file
-2. ALL functionality must work (buttons, forms, games, etc)
-3. Modern dark theme design
-4. RTL (dir=rtl, lang="fa")
-5. Include ALL needed CSS inline in a <style> tag
-6. Include ALL needed JavaScript inline in a <script> tag
-7. Vazirmatn font: https://fonts.googleapis.com/css2?family=Vazirmatn
+1. ONE complete self-contained HTML file with <!DOCTYPE html> and </html>
+2. MUST include this in <head>: <link rel="stylesheet" href="style.css">
+3. MUST include this before </body>: <script src="main.js"></script>
+4. MUST include this font: <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+5. RTL (dir=rtl, lang="fa")
+6. ALL functionality must work (buttons, forms, games, etc)
+7. Modern dark theme design
 8. Real content, NOT lorem ipsum
-9. Make it look professional and polished
-10. EVERY feature the user asked for must be implemented and working
 
-OUTPUT: ONLY the HTML code in a ```html block. No explanation."""
+OUTPUT: ONLY the HTML code in a ```html block."""
         return self._call([{"role": "user", "content": prompt}], max_tokens=4096)
 
     # ===== VERIFY =====
