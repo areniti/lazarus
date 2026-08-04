@@ -225,9 +225,14 @@ def create_app():
 
     @app.route("/<path:filename>")
     def serve_file(filename):
+        # Only serve specific static file types
+        ALLOWED = {".css", ".js", ".html", ".png", ".jpg", ".jpeg", ".svg", ".ico", ".gif", ".woff", ".woff2"}
+        from pathlib import PurePath
+        ext = PurePath(filename).suffix.lower()
+        if ext not in ALLOWED:
+            return "Not found", 404
         path = config.output_dir / filename
         if path.exists() and path.is_file():
-            ext = path.suffix.lower()
             content_types = {".css": "text/css", ".js": "application/javascript", ".html": "text/html", ".png": "image/png", ".jpg": "image/jpeg", ".svg": "image/svg+xml"}
             ct = content_types.get(ext, "text/plain")
             if ext in [".css", ".js", ".html"]:
