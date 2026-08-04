@@ -4,7 +4,7 @@
 {% if sites %}
 <div style="padding:0;margin:-20px;">
     {% for site in sites %}
-    <iframe src="/preview/{{ site.file }}" style="width:100%;height:calc(100vh - 60px);border:none;border-radius:12px;"></iframe>
+    <iframe src="{{ url_for('preview', filename=site.file) }}" style="width:100%;height:calc(100vh - 60px);border:none;border-radius:12px;"></iframe>
     {% endfor %}
 </div>
 {% else %}

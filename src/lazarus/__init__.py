@@ -1,2 +1,3 @@
-"""Lazarus - AI-Powered CMS with CPU-like Architecture"""
-__version__ = "4.0.0"
+"""Lazarus - AI-Powered CMS"""
+
+__version__ = "5.8.0"

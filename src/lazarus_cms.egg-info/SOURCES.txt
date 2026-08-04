@@ -2,18 +2,13 @@ README.md
 pyproject.toml
 src/lazarus/__init__.py
 src/lazarus/__main__.py
-src/lazarus/prompts.py
 src/lazarus/skills.md
 src/lazarus/core/__init__.py
 src/lazarus/core/config.py
 src/lazarus/core/memory.py
-src/lazarus/core/user.py
 src/lazarus/modules/__init__.py
 src/lazarus/modules/ai.py
-src/lazarus/modules/executor.py
 src/lazarus/modules/pipeline.py
-src/lazarus/modules/planner.py
-src/lazarus/modules/state.py
 src/lazarus/modules/tools.py
 src/lazarus/web/__init__.py
 src/lazarus/web/app.py
@@ -24,6 +19,7 @@ src/lazarus/web/templates/chat.html
 src/lazarus/web/templates/index.html
 src/lazarus/web/templates/login.html
 src/lazarus/web/templates/settings.html
+src/lazarus/web/templates/setup.html
 src/lazarus/web/templates/user.html
 src/lazarus_cms.egg-info/PKG-INFO
 src/lazarus_cms.egg-info/SOURCES.txt
@@ -31,3 +27,10 @@ src/lazarus_cms.egg-info/dependency_links.txt
 src/lazarus_cms.egg-info/entry_points.txt
 src/lazarus_cms.egg-info/requires.txt
 src/lazarus_cms.egg-info/top_level.txt
+tests/test_classify.py
+tests/test_config.py
+tests/test_json_parsing.py
+tests/test_migration.py
+tests/test_pipeline.py
+tests/test_tools.py
+tests/test_web.py

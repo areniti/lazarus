@@ -9,7 +9,7 @@
         <strong>{{ site.name }}</strong>
         <span class="text-muted" style="margin-right:10px;">({{ (site.size/1024)|round(1) }}KB)</span>
     </div>
-    <a href="/preview/{{ site.file }}" target="_blank" class="btn btn-sm">👁️ مشاهده</a>
+    <a href="{{ url_for('preview', filename=site.file) }}" target="_blank" class="btn btn-sm">👁️ مشاهده</a>
 </div>
 {% endfor %}
 

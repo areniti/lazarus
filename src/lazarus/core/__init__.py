@@ -1,5 +1,5 @@
-"""Core: Config, User Management"""
+"""Core: Config, Memory"""
 from .config import Config
-from .user import User
+from .memory import Memory
 
-__all__ = ["Config", "User"]
+__all__ = ["Config", "Memory"]

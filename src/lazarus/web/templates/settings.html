@@ -35,7 +35,7 @@ function changePassword() {
     const new_pass2 = document.getElementById('new_pass2').value;
     const status = document.getElementById('pass_status');
     if (new_pass !== new_pass2) { status.innerHTML = '<span class="error">پسورد جدید مطابقت ندارد</span>'; return; }
-    if (new_pass.length < 4) { status.innerHTML = '<span class="error">پسورد حداقل ۴ کاراکتر</span>'; return; }
+    if (new_pass.length < 8) { status.innerHTML = '<span class="error">پسورد حداقل ۸ کاراکتر</span>'; return; }
     fetch('/api/save-password', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({old_password:old_pass, new_password:new_pass})})
     .then(r=>r.json()).then(d=>{
         if(d.ok) status.innerHTML = '<span class="success">✅ پسورد ذخیره شد</span>';

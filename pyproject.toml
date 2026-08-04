@@ -4,20 +4,27 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lazarus-cms"
-version = "5.7.0"
-description = "AI-Powered CMS with CPU-like Architecture"
+version = "5.8.0"
+description = "AI-Powered CMS that builds websites from a chat prompt"
+readme = "README.md"
 requires-python = ">=3.10"
+license = { text = "MIT" }
 dependencies = [
     "flask>=3.0",
     "requests>=2.31",
-    "pyyaml>=6.0",
 ]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
 
 [project.scripts]
 lazarus = "lazarus.__main__:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "lazarus.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-lazarus = ["web/templates/*.html", "web/static/*", "docs/*.md", "skills.md"]
+lazarus = ["web/templates/*.html", "web/static/*", "skills.md"]

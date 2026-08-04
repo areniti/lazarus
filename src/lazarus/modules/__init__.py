@@ -1,6 +1,6 @@
-"""Modules - CPU-like building blocks"""
-from .ai import AI
-from .tools import Tools
+"""Modules - AI, Tools, Pipeline"""
+from .ai import AI, AIError
 from .pipeline import Pipeline
+from .tools import Tools
 
-__all__ = ["AI", "Tools", "Pipeline"]
+__all__ = ["AI", "AIError", "Tools", "Pipeline"]
