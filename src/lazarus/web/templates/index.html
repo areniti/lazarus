@@ -1,18 +1,249 @@
 {% extends "base.html" %}
 {% block title %}Lazarus{% endblock %}
+
 {% block content %}
 {% if sites %}
-<div style="padding:0;margin:-20px;">
+<div style="padding:0;">
     {% for site in sites %}
-    <iframe src="{{ url_for('preview', filename=site.file) }}" style="width:100%;height:calc(100vh - 60px);border:none;border-radius:12px;"></iframe>
+    <iframe src="{{ url_for('preview', filename=site.file) }}" style="width:100%;height:calc(100vh - 56px);border:none;border-radius:12px;"></iframe>
     {% endfor %}
 </div>
 {% else %}
-<div style="text-align:center;padding:100px 0;">
-    <h1 style="font-size:64px;color:#58a6ff;margin-bottom:16px;">🔧 L A Z A R U S</h1>
-    <p style="color:#8b949e;font-size:18px;">AI-Powered CMS</p>
-    <p style="color:#484f58;font-size:14px;margin-top:40px;">هنوز سایتی ساخته نشده</p>
-    <a href="/admin" class="btn btn-blue" style="margin-top:20px;">⚙️ پنل ادمین</a>
+<style>
+    .home-hero {
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        min-height: calc(100vh - 56px);
+        text-align: center; padding: 2rem;
+        position: relative;
+    }
+    .code-terminal {
+        background: var(--surface-2); border: 1px solid var(--border);
+        border-radius: 14px; padding: 14px 20px;
+        margin-bottom: 2rem; font-family: 'JetBrains Mono', monospace;
+        font-size: 0.875rem; color: var(--text-main);
+        display: flex; align-items: center; gap: 10px;
+        min-width: 320px; max-width: 400px;
+        animation: fadeUp 0.6s ease-out 0.1s both;
+        overflow: hidden; direction: ltr; text-align: left;
+    }
+    .code-terminal .prompt { color: var(--primary); white-space: nowrap; }
+    .code-terminal .typed { color: var(--text-main); }
+    .code-terminal .cursor-blink {
+        display: inline-block; width: 2px; height: 1em;
+        background: var(--primary); margin-left: 2px;
+        animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50%{opacity:0} }
+    .home-title {
+        font-size: clamp(2rem, 1.5rem + 3vw, 3rem);
+        font-weight: 700; color: var(--text-main);
+        margin-bottom: 0.75rem; line-height: 1.1;
+        opacity: 0; animation: fadeUp 0.6s ease-out 0.2s forwards;
+    }
+    .home-subtitle {
+        font-size: 1.125rem; color: var(--text-muted);
+        max-width: 32rem; line-height: 1.6; margin-bottom: 2.5rem;
+        opacity: 0; animation: fadeUp 0.6s ease-out 0.3s forwards;
+    }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .home-cta {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 12px 28px; border-radius: 9999px;
+        background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+        color: white; font-size: 0.9375rem; font-weight: 600;
+        text-decoration: none; border: none; cursor: pointer;
+        transition: all 0.3s ease-out; position: relative; overflow: hidden;
+        opacity: 0; animation: fadeUp 0.6s ease-out 0.4s forwards;
+    }
+    .home-cta::before {
+        content: ''; position: absolute;
+        top: 50%; left: 50%;
+        width: 0; height: 0;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    .home-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99,102,241,0.4); }
+    .home-cta:hover::before { width: 300px; height: 300px; }
+    .home-cta:active { transform: scale(0.97); }
+    .home-cta svg { width: 18px; height: 18px; }
+
+    .home-stats {
+        display: flex; gap: 2rem; justify-content: center;
+        margin-top: 3rem;
+        opacity: 0; animation: fadeUp 0.6s ease-out 0.6s forwards;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+        font-size: 1.5rem; font-weight: 700; color: var(--text-main);
+        font-variant-numeric: tabular-nums;
+    }
+    .stat-label {
+        font-size: 0.75rem; color: var(--text-subtle);
+        text-transform: uppercase; letter-spacing: 0.1em;
+        margin-top: 4px;
+    }
+
+    .home-features {
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        gap: 1rem; max-width: 640px; margin: 3rem auto 0;
+        opacity: 0; animation: fadeUp 0.6s ease-out 0.7s forwards;
+    }
+    .feature-card {
+        background: var(--surface-2); border: 1px solid var(--border);
+        border-radius: 14px; padding: 1.25rem;
+        text-align: left; transition: all 0.3s ease-out;
+    }
+    .feature-card:hover {
+        border-color: var(--primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(99,102,241,0.15);
+    }
+    .feature-card-icon {
+        width: 32px; height: 32px; border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 0.75rem;
+    }
+    .feature-card-icon svg { width: 16px; height: 16px; }
+    .feature-card-icon.green { background: rgba(34,197,94,0.12); color: #22c55e; }
+    .feature-card-icon.blue { background: rgba(59,130,246,0.12); color: #3b82f6; }
+    .feature-card-icon.purple { background: rgba(139,92,246,0.12); color: #a78bfa; }
+    .feature-card h3 {
+        font-size: 0.8125rem; font-weight: 600; color: var(--text-main);
+        margin-bottom: 4px;
+    }
+    .feature-card p {
+        font-size: 0.75rem; color: var(--text-subtle); line-height: 1.5;
+    }
+
+    .home-links {
+        display: flex; gap: 0.75rem; justify-content: center;
+        margin-top: 2rem;
+        opacity: 0; animation: fadeUp 0.6s ease-out 0.8s forwards;
+    }
+    .home-link {
+        padding: 8px 16px; border-radius: 9999px;
+        background: var(--surface-2); border: 1px solid var(--border);
+        color: var(--text-muted); font-size: 0.8125rem; font-weight: 500;
+        text-decoration: none; transition: all 0.3s ease-out;
+        display: inline-flex; align-items: center; gap: 6px;
+    }
+    .home-link:hover {
+        border-color: var(--primary); color: var(--text-main);
+        background: rgba(99,102,241,0.05);
+    }
+    .home-link svg { width: 14px; height: 14px; }
+
+    @media (max-width: 640px) {
+        .home-features { grid-template-columns: 1fr; max-width: 100%; }
+        .home-stats { gap: 1rem; flex-wrap: wrap; }
+        .stat-value { font-size: 1.25rem; }
+        .home-title { font-size: 1.75rem; }
+        .home-subtitle { font-size: 0.9375rem; padding: 0 0.5rem; }
+        .home-cta { padding: 10px 20px; font-size: 0.875rem; }
+        .home-links { flex-direction: column; align-items: center; gap: 0.5rem; }
+        .home-link { width: 100%; max-width: 260px; justify-content: center; }
+        .home-icon { width: 64px; height: 64px; }
+        .home-icon svg { width: 28px; height: 28px; }
+        .home-hero { padding: 1.5rem 1rem; }
+        .feature-card { padding: 1rem; }
+    }
+    @media (max-width: 380px) {
+        .home-title { font-size: 1.5rem; }
+        .home-stats { gap: 0.75rem; }
+    }
+</style>
+
+<div class="home-hero">
+    <div class="code-terminal">
+        <span class="prompt">$</span>
+        <span class="typed" id="typedText"></span>
+        <span class="cursor-blink"></span>
+    </div>
+    <h1 class="home-title">L A Z A R U S</h1>
+    <p class="home-subtitle">AI-Powered CMS. Describe your website in natural language and watch it come to life.</p>
+    <a href="/admin/chat" class="home-cta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Start building
+    </a>
+
+    <div class="home-stats">
+        <div class="stat-item">
+            <div class="stat-value">Ready</div>
+            <div class="stat-label">Status</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">v5.8</div>
+            <div class="stat-label">Version</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">AI</div>
+            <div class="stat-label">CMS</div>
+        </div>
+    </div>
+
+    <div class="home-features">
+        <div class="feature-card">
+            <div class="feature-card-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h3>Instant Deploy</h3>
+            <p>Build and deploy in seconds</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3>Private by Default</h3>
+            <p>Your data stays on your server</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-card-icon purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <h3>Smart AI</h3>
+            <p>Natural language to code</p>
+        </div>
+    </div>
+
+    <div class="home-links">
+        <a href="/admin/chat" class="home-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Open Chat
+        </a>
+        <a href="/admin" class="home-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Settings
+        </a>
+        <a href="/admin/settings/api" class="home-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            API Config
+        </a>
+    </div>
 </div>
+
+<script>
+    const phrases = ['pip install lazarus-cms','lazarus --host 0.0.0.0','build "landing page for AI startup"','curl -X POST /api/build','deploy --instant'];
+    const el = document.getElementById('typedText');
+    let phraseIdx = 0, charIdx = 0, deleting = false, delay = 80;
+    function type() {
+        const current = phrases[phraseIdx];
+        if (!deleting) {
+            el.textContent = current.substring(0, charIdx + 1);
+            charIdx++;
+            if (charIdx === current.length) { deleting = true; delay = 2000; }
+            else { delay = 60 + Math.random() * 40; }
+        } else {
+            el.textContent = current.substring(0, charIdx - 1);
+            charIdx--;
+            if (charIdx === 0) { deleting = false; phraseIdx = (phraseIdx + 1) % phrases.length; delay = 400; }
+            else { delay = 30; }
+        }
+        setTimeout(type, delay);
+    }
+    type();
+</script>
 {% endif %}
 {% endblock %}

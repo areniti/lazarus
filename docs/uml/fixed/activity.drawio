@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-08-05T00:00:00.000Z" agent="Hermes Agent" version="21.0.0" type="device">
+  <diagram id="activity-lazarus-cms" name="Activity Diagram">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1400" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- ==================== INITIAL NODE ==================== -->
+        <mxCell id="start" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#1a1a2e;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="730" y="30" width="40" height="40" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ACTIVITY: Receive Input ==================== -->
+        <mxCell id="act1" value="&#x62F;&#x631;&#x6CC;&#x627;&#x641;&#x62A; &#x648;&#x631;&#x648;&#x62F; &#x6A9;&#x627;&#x631;&#x628;&#x631;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3498db;strokeColor=#2980b9;strokeWidth=2;fontColor=#ffffff;fontSize=13;fontStyle=1;arcSize=30;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="630" y="120" width="240" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1a1a2e;strokeWidth=2;" edge="1" source="start" target="act1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== DECISION: Request Type ==================== -->
+        <mxCell id="dec1" value="&#x646;&#x648;&#x639; &#x62F;&#x631;&#x62E;&#x648;&#x627;&#x633;&#x62A; &#x62E;&#x648;&#x62F;?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f39c12;strokeColor=#e67e22;strokeWidth=2;fontColor=#1a1a2e;fontSize=13;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="675" y="240" width="150" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1a1a2e;strokeWidth=2;" edge="1" source="act1" target="dec1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== DECISION: Chat Branch ==================== -->
+        <mxCell id="branch_chat" value="&#x645;&#x634;&#x627;&#x647;&#x62F;&#x647; &#x6AF;&#x641;&#x62A;&#x6AF;&#x648;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#8e44ad;strokeColor=#7d3c98;strokeWidth=2;fontColor=#ffffff;fontSize=13;fontStyle=1;arcSize=30;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="260" width="220" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_chat" value="&#x6AF;&#x641;&#x62A;&#x6AF;&#x648;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8e44ad;strokeWidth=2;fontSize=12;fontStyle=1;fontColor=#8e44ad;" edge="1" source="dec1" target="branch_chat" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== DECISION: Build Branch ==================== -->
+        <mxCell id="branch_build" value="&#x633;&#x627;&#x62E;&#x62A; &#x648;&#x628;&#x633;&#x627;&#x6CC;&#x62A;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e74c3c;strokeColor=#c0392b;strokeWidth=2;fontColor=#ffffff;fontSize=13;fontStyle=1;arcSize=30;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="670" y="440" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_build" value="&#x633;&#x627;&#x62E;&#x62A;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=2;fontSize=12;fontStyle=1;fontColor=#e74c3c;" edge="1" source="dec1" target="branch_build" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== DECISION: Edit Branch ==================== -->
+        <mxCell id="branch_edit" value="&#x648;&#x6CC;&#x631;&#x627;&#x6CC;&#x634; &#x648;&#x628;&#x633;&#x627;&#x6CC;&#x62A;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e67e22;strokeColor=#d35400;strokeWidth=2;fontColor=#ffffff;fontSize=13;fontStyle=1;arcSize=30;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="260" width="220" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_edit" value="&#x648;&#x6CC;&#x631;&#x627;&#x6CC;&#x634;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e67e22;strokeWidth=2;fontSize=12;fontStyle=1;fontColor=#e67e22;" edge="1" source="dec1" target="branch_edit" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== CHAT BRANCH PIPELINE ==================== -->
+
+        <mxCell id="chat1" value="&#x67E;&#x631;&#x62F;&#x627;&#x632;&#x634; &#x6A9;&#x62A;&#x627;&#x628; &#x6A9;&#x627;&#x631;&#x628;&#x631;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#9b59b6;strokeColor=#8e44ad;strokeWidth=1;fontColor=#ffffff;fontSize=12;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="270" y="380" width="180" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_c1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8e44ad;strokeWidth=1;" edge="1" source="branch_chat" target="chat1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="chat2" value="&#x627;&#x631;&#x633;&#x627;&#x644; &#x628;&#x647; &#x645;&#x62F;&#x644; &#x647;&#x648;&#x634; &#x645;&#x635;&#x646;&#x648;&#x639;&#x6CC;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#9b59b6;strokeColor=#8e44ad;strokeWidth=1;fontColor=#ffffff;fontSize=12;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="270" y="460" width="180" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_c2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8e44ad;strokeWidth=1;" edge="1" source="chat1" target="chat2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="chat3" value="&#x628;&#x627;&#x632;&#x6AF;&#x631;&#x62F;&#x627;&#x646;&#x62F;&#x646; &#x67E;&#x627;&#x633;&#x62E;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#9b59b6;strokeColor=#8e44ad;strokeWidth=1;fontColor=#ffffff;fontSize=12;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="270" y="540" width="180" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_c3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8e44ad;strokeWidth=1;" edge="1" source="chat2" target="chat3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== BUILD BRANCH PIPELINE ==================== -->
+
+        <!-- Build: Classify -->
+        <mxCell id="build1" value="&#x62A;&#x635;&#x646;&#x6CC;&#x641; &#x62F;&#x631;&#x62E;&#x648;&#x627;&#x633;&#x62A; &#x648;&#x631;&#x648;&#x62F;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e74c3c;strokeColor=#c0392b;strokeWidth=1;fontColor=#ffffff;fontSize=12;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="690" y="560" width="220" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_b1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;" edge="1" source="branch_build" target="build1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Build: Decompose -->
+        <mxCell id="build2" value="&#x62A;&#x62D;&#x644;&#x6CC;&#x644; &#x628;&#x647; &#x62C;&#x632;&#x622;&#x628;&#x647; &#x62C;&#x627;&#x631;&#x6CC;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e74c3c;strokeColor=#c0392b;strokeWidth=1;fontColor=#ffffff;fontSize=12;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="690" y="640" width="220" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_b2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;" edge="1" source="build1" target="build2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Build: Parallel Fork -->
+        <mxCell id="fork1" value="" style="shape=mxgraph.flowchart.decision;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#1a1a2e;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="785" y="720" width="120" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_b2f" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;" edge="1" source="build2" target="fork1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Generate CSS -->
+        <mxCell id="gen_css" value="&#x62A;&#x648;&#x644;&#x6CC;&#x62F; CSS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e67e22;strokeColor=#d35400;strokeWidth=1;fontColor=#ffffff;fontSize=12;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="610" y="770" width="140" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Generate JS -->
+        <mxCell id="gen_js" value="&#x62A;&#x648;&#x644;&#x6CC;&#x62F; JavaScript" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e67e22;strokeColor=#d35400;strokeWidth=1;fontColor=#ffffff;fontSize=12;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="780" y="770" width="140" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Generate HTML -->
+        <mxCell id="gen_html" value="&#x62A;&#x648;&#x644;&#x6CC;&#x62F; HTML" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e67e22;strokeColor=#d35400;strokeWidth=1;fontColor=#ffffff;fontSize=12;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="950" y="770" width="140" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_fork_css" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;" edge="1" source="fork1" target="gen_css" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_fork_js" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;" edge="1" source="fork1" target="gen_js" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_fork_html" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;" edge="1" source="fork1" target="gen_html" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Join Bar -->
+        <mxCell id="join1" value="" style="shape=mxgraph.flowchart.decision;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#1a1a2e;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="785" y="850" width="120" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_join_css" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;" edge="1" source="gen_css" target="join1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_join_js" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;" edge="1" source="gen_js" target="join1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_join_html" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;" edge="1" source="gen_html" target="join1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Validate -->
+        <mxCell id="build3" value="&#x627;&#x631;&#x632;&#x634; &#x62F;&#x631;&#x633;&#x62A;&#x6CC; &#x62E;&#x631;&#x648;&#x62C;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e74c3c;strokeColor=#c0392b;strokeWidth=1;fontColor=#ffffff;fontSize=12;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="690" y="900" width="220" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_b3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;" edge="1" source="join1" target="build3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Save -->
+        <mxCell id="build4" value="&#x630;&#x62E;&#x6CC;&#x631;&#x647; &#x62F;&#x631; &#x67E;&#x627;&#x634;&#x62A; &#x628;&#x627;&#x632;&#x6CC;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e74c3c;strokeColor=#c0392b;strokeWidth=1;fontColor=#ffffff;fontSize=12;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="690" y="980" width="220" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_b4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;" edge="1" source="build3" target="build4" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== EDIT BRANCH ==================== -->
+        <mxCell id="edit1" value="&#x628;&#x627;&#x631;&#x6AF;&#x630;&#x627;&#x631;&#x6CC; &#x642;&#x628;&#x644;&#x6CC; &#x645;&#x648;&#x62C;&#x648;&#x62F;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e67e22;strokeColor=#d35400;strokeWidth=1;fontColor=#ffffff;fontSize=12;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="380" width="180" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e67e22;strokeWidth=1;" edge="1" source="branch_edit" target="edit1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="edit2" value="&#x627;&#x637;&#x644;&#x627;&#x642; &#x62A;&#x63A;&#x6CC;&#x6CC;&#x631;&#x627;&#x62A; &#x6A9;&#x627;&#x631;&#x628;&#x631;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e67e22;strokeColor=#d35400;strokeWidth=1;fontColor=#ffffff;fontSize=12;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="460" width="180" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e67e22;strokeWidth=1;" edge="1" source="edit1" target="edit2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="edit3" value="&#x628;&#x627;&#x632;&#x633;&#x627;&#x62E;&#x62A;&#x646; &#x648;&#x628;&#x633;&#x627;&#x6CC;&#x62A;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e67e22;strokeColor=#d35400;strokeWidth=1;fontColor=#ffffff;fontSize=12;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="1110" y="540" width="180" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e67e22;strokeWidth=1;" edge="1" source="edit2" target="edit3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== VALIDATION DECISION ==================== -->
+        <mxCell id="dec_valid" value="&#x622;&#x6CC;&#x627; &#x62E;&#x631;&#x648;&#x62C; &#x628;&#x648;&#x62F;&#x646;&#x6CC;&#x62F;?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#2ecc71;strokeColor=#27ae60;strokeWidth=2;fontColor=#1a1a2e;fontSize=12;fontStyle=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="715" y="1070" width="170" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_valid" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;" edge="1" source="build4" target="dec_valid" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Error Feedback Loop -->
+        <mxCell id="error_msg" value="&#x646;&#x645;&#x627;&#x6CC;&#x634; &#x62E;&#x637;&#x627; &#x628;&#x647; &#x6A9;&#x627;&#x631;&#x628;&#x631;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c0392b;strokeColor=#a93226;strokeWidth=1;fontColor=#ffffff;fontSize=12;arcSize=30;" vertex="1" parent="1">
+          <mxGeometry x="460" y="1110" width="180" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_err" value="&#x62E;&#x637;&#x627;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c0392b;strokeWidth=2;fontSize=11;fontStyle=1;fontColor=#c0392b;" edge="1" source="dec_valid" target="error_msg" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Loop back to classify -->
+        <mxCell id="flow_loop" value="&#x628;&#x627;&#x632;&#x6AF;&#x634;&#x62A;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c0392b;strokeWidth=2;dashed=1;fontSize=11;fontStyle=1;fontColor=#c0392b;" edge="1" source="error_msg" target="build1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="420" y="1135"/>
+              <mxPoint x="420" y="585"/>
+              <mxPoint x="680" y="585"/>
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ==================== MERGE NODES ==================== -->
+        <mxCell id="merge_chat_build" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#1a1a2e;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="535" y="1255" width="30" height="30" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="merge_all" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#1a1a2e;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="735" y="1255" width="30" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- Chat → Merge -->
+        <mxCell id="flow_c_merge" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8e44ad;strokeWidth=1;" edge="1" source="chat3" target="merge_chat_build" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Build (success) → Merge -->
+        <mxCell id="flow_b_merge" value="&#x628;&#x645;&#x648;&#x641;&#x642;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#27ae60;strokeWidth=2;fontSize=11;fontStyle=1;fontColor=#27ae60;" edge="1" source="dec_valid" target="merge_chat_build" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Edit → Merge -->
+        <mxCell id="flow_e_merge" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e67e22;strokeWidth=1;" edge="1" source="edit3" target="merge_all" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Chat+Build merge → All merge -->
+        <mxCell id="flow_cb_all" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1a1a2e;strokeWidth=2;" edge="1" source="merge_chat_build" target="merge_all" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== FINAL NODE ==================== -->
+        <mxCell id="end" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1a1a2e;strokeColor=#1a1a2e;strokeWidth=4;" vertex="1" parent="1">
+          <mxGeometry x="730" y="1330" width="40" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="flow_end" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1a1a2e;strokeWidth=2;" edge="1" source="merge_all" target="end" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== SWIMLANE LABELS ==================== -->
+        <mxCell id="lane_chat" value="&#x645;&#x633;&#x6CC;&#x631;&#x6CC; &#x6AF;&#x641;&#x62A;&#x6AF;&#x648;" style="text;html=1;fontSize=12;fontStyle=3;fontColor=#8e44ad;align=left;verticalAlign=bottom;" vertex="1" parent="1">
+          <mxGeometry x="170" y="350" width="100" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lane_build" value="&#x645;&#x633;&#x6CC;&#x631;&#x6CC; &#x633;&#x627;&#x62E;&#x62A; &#x648;&#x628;&#x633;&#x627;&#x6CC;&#x62A;" style="text;html=1;fontSize=12;fontStyle=3;fontColor=#e74c3c;align=left;verticalAlign=bottom;" vertex="1" parent="1">
+          <mxGeometry x="570" y="530" width="130" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lane_edit" value="&#x645;&#x633;&#x6CC;&#x631;&#x6CC; &#x648;&#x6CC;&#x631;&#x627;&#x6CC;&#x634;" style="text;html=1;fontSize=12;fontStyle=3;fontColor=#e67e22;align=left;verticalAlign=bottom;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="350" width="100" height="20" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== TITLE ==================== -->
+        <mxCell id="title" value="&#x646;&#x645;&#x648;&#x634;&#x647; &#x627;&#x637;&#x644;&#x627;&#x642;&#x627;&#x62A; - &#x645;&#x627;&#x644;&#x6A9; &#x644;&#x627;&#x632;&#x627;&#x631;&#x648;&#x633; CMS" style="text;html=1;fontSize=20;fontStyle=1;fontColor=#1a1a2e;align=center;" vertex="1" parent="1">
+          <mxGeometry x="550" y="0" width="400" height="30" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

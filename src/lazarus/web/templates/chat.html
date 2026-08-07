@@ -1,63 +1,148 @@
 {% extends "base.html" %}
-{% block title %}چت - LAZARUS{% endblock %}
+{% block title %}Chat — LAZARUS{% endblock %}
+
 {% block content %}
-<h1>💬 چت</h1>
+<style>
+    .chat-page{display:flex;flex-direction:column;height:calc(100vh - 56px);max-width:1000px;margin:0 auto;padding:0 1rem;}
 
-<div id="chat" style="height:calc(100vh - 200px);overflow-y:auto;padding:16px;background:#161b22;border:1px solid #30363d;border-radius:12px;margin-bottom:12px;"></div>
+    .chat-header{padding:1.25rem 0;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .chat-header h1{font-size:1.25rem;font-weight:700;display:flex;align-items:center;gap:8px;}
+    .chat-header h1 svg{width:20px;height:20px;color:var(--primary);}
+    .chat-header .status{display:flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--success);}
+    .chat-header .status::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--success);}
 
-<div class="row">
-    <input type="text" id="msg" placeholder="پیام..." onkeydown="if(event.key==='Enter')sendMsg()">
-    <button class="btn" onclick="sendMsg()">ارسال</button>
+    .chat-messages{flex:1;overflow-y:auto;padding:1.5rem 0;display:flex;flex-direction:column;gap:1rem;}
+    .chat-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;color:var(--text-subtle);}
+    .chat-empty svg{width:48px;height:48px;margin-bottom:1rem;color:var(--text-subtle);opacity:0.3;}
+    .chat-empty h3{font-size:1rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;}
+    .chat-empty p{font-size:0.8125rem;}
+
+    .msg{display:flex;gap:10px;max-width:80%;animation:msgIn .3s ease-out;}
+    @keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .msg.user{align-self:flex-end;flex-direction:row-reverse;}
+    .msg.bot{align-self:flex-start;}
+    .msg-avatar{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;}
+    .msg.user .msg-avatar{background:var(--brand-500);color:white;}
+    .msg.bot .msg-avatar{background:var(--surface-3);color:var(--primary);}
+    .msg-bubble{padding:10px 16px;border-radius:14px;font-size:0.875rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;}
+    .msg.user .msg-bubble{background:linear-gradient(135deg,var(--brand-500),var(--brand-700));color:white;border-bottom-right-radius:4px;}
+    .msg.bot .msg-bubble{background:var(--surface-2);border:1px solid var(--border);color:var(--text-main);border-bottom-left-radius:4px;}
+    .msg-time{font-size:0.625rem;color:var(--text-subtle);margin-top:4px;}
+    .msg.user .msg-time{text-align:right;}
+
+    .chat-input-area{padding:1rem 0;border-top:1px solid var(--border);flex-shrink:0;}
+    .chat-input-wrap{display:flex;gap:8px;align-items:flex-end;}
+    .chat-input{flex:1;padding:12px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;color:var(--text-main);font-size:0.9375rem;font-family:'Space Grotesk',sans-serif;outline:none;resize:none;max-height:120px;transition:border-color .2s;}
+    .chat-input::placeholder{color:var(--text-subtle);}
+    .chat-input:focus{border-color:var(--primary);}
+    .chat-send{width:44px;height:44px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--brand-500),var(--brand-700));color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;}
+    .chat-send:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(99,102,241,0.3);}
+    .chat-send:active{transform:scale(0.95);}
+    .chat-send svg{width:20px;height:20px;}
+    .chat-send:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+    @media(max-width:640px){.msg{max-width:90%;}.chat-input{font-size:16px;}}
+</style>
+
+<div class="chat-page">
+    <div class="chat-header">
+        <h1>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Chat
+        </h1>
+        <div class="status">Online</div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+        <div class="chat-empty" id="chatEmpty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <h3>Start a conversation</h3>
+            <p>Describe a website you want to build, or ask anything.</p>
+        </div>
+    </div>
+
+    <div class="chat-input-area">
+        <div class="chat-input-wrap">
+            <textarea class="chat-input" id="chatInput" placeholder="Describe your website..." rows="1" onkeydown="handleKey(event)"></textarea>
+            <button class="chat-send" id="sendBtn" onclick="sendMsg()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+        </div>
+    </div>
 </div>
 
 <script>
-function addMessage(text, type) {
-    const chat = document.getElementById('chat');
-    const div = document.createElement('div');
-    div.style.cssText = 'margin:8px 0;max-width:80%;word-wrap:break-word;';
-    const span = document.createElement('span');
-    span.style.cssText = 'padding:10px 14px;border-radius:12px;display:inline-block;white-space:pre-wrap;';
-    if (type === 'user') {
-        div.style.marginRight = 'auto';
-        div.style.textAlign = 'right';
-        span.style.background = '#1f6feb';
-        span.style.color = 'white';
-    } else {
-        div.style.marginLeft = 'auto';
-        div.style.textAlign = 'left';
-        span.style.background = '#21262d';
-        span.style.color = '#e6edf3';
-    }
-    span.textContent = text;
-    div.appendChild(span);
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
+const chatMessages=document.getElementById('chatMessages');
+const chatInput=document.getElementById('chatInput');
+const sendBtn=document.getElementById('sendBtn');
+const chatEmpty=document.getElementById('chatEmpty');
+
+function addMessage(text,type,html){
+    if(chatEmpty)chatEmpty.remove();
+    const msg=document.createElement('div');
+    msg.className='msg '+type;
+    const avatar=document.createElement('div');
+    avatar.className='msg-avatar';
+    avatar.textContent=type==='user'?'U':'AI';
+    const bubble=document.createElement('div');
+    bubble.className='msg-bubble';
+    if(html){bubble.innerHTML=html;}else{bubble.textContent=text;}
+    const time=document.createElement('div');
+    time.className='msg-time';
+    time.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    const content=document.createElement('div');
+    content.appendChild(bubble);
+    content.appendChild(time);
+    msg.appendChild(avatar);
+    msg.appendChild(content);
+    chatMessages.appendChild(msg);
+    chatMessages.scrollTop=chatMessages.scrollHeight;
 }
 
-function sendMsg() {
-    const input = document.getElementById('msg');
-    const msg = input.value.trim();
-    if (!msg) return;
-    addMessage(msg, 'user');
-    addMessage('⏳ داره فکر میکنه...', 'bot');
-    input.value = '';
-    fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:msg})})
+function handleKey(e){
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}
+}
+
+function sendMsg(){
+    const msg=chatInput.value.trim();
+    if(!msg)return;
+    addMessage(msg,'user');
+    chatInput.value='';
+    chatInput.style.height='auto';
+    sendBtn.disabled=true;
+
+    addMessage('','bot','<div style="display:flex;gap:4px;padding:4px 0;"><div style="width:6px;height:6px;border-radius:50%;background:var(--text-subtle);animation:dotBounce .6s ease-in-out infinite;"></div><div style="width:6px;height:6px;border-radius:50%;background:var(--text-subtle);animation:dotBounce .6s ease-in-out infinite .2s;"></div><div style="width:6px;height:6px;border-radius:50%;background:var(--text-subtle);animation:dotBounce .6s ease-in-out infinite .4s;"></div></div><style>@keyframes dotBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}</style>');
+
+    fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})})
     .then(r=>r.json()).then(data=>{
-        const loading = document.getElementById('chat').lastChild;
-        loading.remove();
-        addMessage(data.error || data.response || JSON.stringify(data), 'bot');
+        const loading=chatMessages.lastChild;
+        if(loading)loading.remove();
+        if(data.status==='done'&&data.files&&data.files.length>0){
+            let html='<div style="margin-bottom:8px;">'+data.response+'</div>';
+            html+='<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+            data.files.forEach(f=>{
+                html+='<a href="/preview/'+f.name+'" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:8px;color:var(--primary);font-size:0.75rem;text-decoration:none;">📄 '+f.name+'</a>';
+            });
+            html+='</div>';
+            addMessage('','bot',html);
+        }else{
+            addMessage(data.error||data.response||'No response','bot');
+        }
+        sendBtn.disabled=false;
     }).catch(err=>{
-        const loading = document.getElementById('chat').lastChild;
-        loading.remove();
-        addMessage('❌ ' + err, 'bot');
+        const loading=chatMessages.lastChild;
+        if(loading)loading.remove();
+        addMessage('Error: '+err,'bot');
+        sendBtn.disabled=false;
     });
 }
 
-// Load chat history from server
+// Auto-resize textarea
+chatInput.addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';});
+
+// Load history
 fetch('/api/chat-history').then(r=>r.json()).then(data=>{
-    if(data.history) {
-        data.history.forEach(m => addMessage(m.content, m.role === 'user' ? 'user' : 'bot'));
-    }
+    if(data.history){data.history.forEach(m=>addMessage(m.content,m.role==='user'?'user':'bot'));}
 }).catch(()=>{});
 </script>
 {% endblock %}

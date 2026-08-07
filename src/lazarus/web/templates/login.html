@@ -1,15 +1,227 @@
-{% extends "base.html" %}
-{% block title %}Login - Lazarus{% endblock %}
-{% block content %}
-<div style="max-width: 400px; margin: 80px auto;">
-    <h2 style="text-align: center; margin-bottom: 24px;">🔑 ورود به پنل ادمین</h2>
-    {% if error %}
-    <p class="error">{{ error }}</p>
-    {% endif %}
-    <form method="POST">
-        <input type="text" name="username" placeholder="نام کاربری" required>
-        <input type="password" name="password" placeholder="رمز عبور" required>
-        <button type="submit" class="btn" style="width: 100%;">ورود</button>
-    </form>
-</div>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in — LAZARUS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#09090b;--surface-2:#1c1c21;--surface-3:#27272a;--border:#27272a;--border-subtle:#1e1e22;--text-main:#fafafa;--text-muted:#a1a1aa;--text-subtle:#52525b;--primary:#818cf8;--danger:#ef4444;--success:#22c55e;--brand-500:#6366f1;--brand-700:#4338ca;}
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text-main);min-height:100vh;overflow-x:hidden;}
+
+        .bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;}
+        .blob{position:absolute;border-radius:50%;filter:blur(100px);mix-blend-mode:screen;}
+        .blob-1{width:600px;height:600px;background:radial-gradient(circle,rgba(99,102,241,0.3) 0%,transparent 70%);top:-200px;right:-150px;animation:b1 8s ease-in-out infinite;}
+        .blob-2{width:500px;height:500px;background:radial-gradient(circle,rgba(139,92,246,0.2) 0%,transparent 70%);bottom:-150px;left:-100px;animation:b2 10s ease-in-out infinite;}
+        .blob-3{width:400px;height:400px;background:radial-gradient(circle,rgba(59,130,246,0.15) 0%,transparent 70%);top:30%;left:40%;animation:b3 12s ease-in-out infinite;}
+        @keyframes b1{0%,100%{transform:translate(0,0) scale(1)}25%{transform:translate(-80px,60px) scale(1.2)}50%{transform:translate(40px,-40px) scale(0.9)}75%{transform:translate(-30px,-80px) scale(1.1)}}
+        @keyframes b2{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(100px,-60px) scale(1.3)}66%{transform:translate(-50px,80px) scale(0.8)}}
+        @keyframes b3{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.4)}}
+
+        .particles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+        .particle{position:absolute;width:3px;height:3px;background:rgba(229,106,74,0.5);border-radius:50%;animation:pf linear infinite;}
+        @keyframes pf{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-10vh) scale(1);opacity:0}}
+
+        .grid-lines{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:0.03;}
+        .grid-lines::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px);background-size:80px 80px;}
+        .grain{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:0.04;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+        .cursor-glow{position:fixed;width:300px;height:300px;background:radial-gradient(circle,rgba(99,102,241,0.08) 0%,transparent 70%);border-radius:50%;pointer-events:none;z-index:1;transform:translate(-50%,-50%);transition:transform 0.1s ease-out;}
+
+        /* HEADER with typing */
+        header{position:sticky;top:0;z-index:30;border-bottom:1px solid var(--border-subtle);background:rgba(9,9,11,0.7);backdrop-filter:blur(20px) saturate(180%);height:56px;}
+        .header-inner{max-width:1280px;margin:0 auto;padding:0 20px;height:100%;display:flex;align-items:center;justify-content:space-between;}
+        .header-left{display:flex;align-items:center;gap:12px;}
+        .header-logo{width:32px;height:32px;background:linear-gradient(135deg,var(--brand-500),var(--brand-700));border-radius:8px;display:flex;align-items:center;justify-content:center;}
+        .header-logo svg{width:18px;height:18px;}
+        .nav-typing{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-muted);direction:ltr;text-align:left;}
+        .nav-typing .prompt{color:var(--primary);}
+        .nav-cursor{display:inline-block;width:2px;height:1em;background:var(--primary);animation:blink 1s step-end infinite;}
+        @keyframes blink{50%{opacity:0}}
+
+        .main-layout{position:relative;z-index:2;display:flex;min-height:calc(100vh - 56px);}
+
+        /* LEFT: slides */
+        .login-left{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 60px;border-right:1px solid var(--border-subtle);position:relative;overflow:hidden;}
+        .slide-container{max-width:520px;width:100%;position:relative;min-height:300px;}
+        .slide{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;opacity:0;transform:translateX(40px);transition:opacity .5s ease,transform .5s ease;pointer-events:none;}
+        .slide.active{opacity:1;transform:translateX(0);pointer-events:auto;}
+        .slide-eyebrow{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;}
+        .slide-title{font-size:36px;font-weight:700;line-height:1.2;margin-bottom:16px;}
+        .slide-desc{font-size:15px;color:var(--text-muted);line-height:1.6;margin-bottom:24px;}
+        .slide-pills{display:flex;flex-wrap:wrap;gap:8px;}
+        .pill{padding:8px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:20px;font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:6px;}
+        .pill-icon{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;}
+        .pill-green .pill-icon{background:rgba(34,197,94,0.15);}.pill-blue .pill-icon{background:rgba(59,130,246,0.15);}.pill-purple .pill-icon{background:rgba(139,92,246,0.15);}
+        .slide-dots{display:flex;gap:6px;justify-content:center;margin-top:32px;}
+        .slide-dot{width:8px;height:8px;border-radius:50%;background:var(--border);cursor:pointer;transition:all .3s;}
+        .slide-dot.active{background:var(--primary);width:24px;border-radius:9999px;}
+
+        /* RIGHT: login */
+        .login-right{width:420px;min-width:420px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px;}
+        .login-box{width:100%;max-width:340px;}
+        .login-header{margin-bottom:28px;text-align:center;}
+        .login-header h2{font-size:22px;font-weight:700;margin-bottom:6px;}
+        .login-header p{font-size:13px;color:var(--text-muted);}
+
+        .login-form{display:flex;flex-direction:column;gap:14px;}
+        .form-group{display:flex;flex-direction:column;gap:6px;}
+        .form-label{font-size:13px;font-weight:500;}
+        .form-label .req{color:var(--danger);margin-left:2px;}
+        .input-wrap{position:relative;}
+        .input-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text-muted);transition:color .3s;}
+        .form-input{width:100%;padding:10px 12px 10px 38px;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;color:var(--text-main);font-size:15px;font-family:'Space Grotesk',sans-serif;outline:none;transition:all .3s ease-out;}
+        .form-input::placeholder{color:var(--text-subtle);}
+        .form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(59,130,246,0.15);background:rgba(99,102,241,0.03);}
+        .form-group:focus-within svg{color:var(--primary);}
+
+        .error-msg{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--danger);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+        .error-msg svg{width:16px;height:16px;flex-shrink:0;}
+
+        .security-check{height:100px;width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:12px;display:grid;place-items:center;font-size:13px;color:var(--text-muted);position:relative;overflow:hidden;}
+        .security-check::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(99,102,241,0.05),transparent);animation:sh 2s infinite;}
+        @keyframes sh{100%{left:100%;}}
+        .spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:sp 1s linear infinite;margin-bottom:8px;}
+        @keyframes sp{to{transform:rotate(360deg);}}
+
+        .submit-btn{width:100%;height:44px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--brand-500),var(--brand-700));color:white;font-size:14px;font-weight:600;font-family:'Space Grotesk',sans-serif;cursor:pointer;position:relative;overflow:hidden;transition:all .3s ease-out;margin-top:8px;}
+        .submit-btn::before{content:'';position:absolute;top:50%;left:50%;width:0;height:0;background:rgba(255,255,255,0.1);border-radius:50%;transform:translate(-50%,-50%);transition:width .6s,height .6s;}
+        .submit-btn:hover::before{width:300px;height:300px;}
+        .submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(99,102,241,0.4);}
+        .submit-btn:active{transform:scale(0.97);}
+        .submit-btn:disabled{background:var(--surface-3);color:var(--text-muted);cursor:not-allowed;transform:none;}
+        .submit-btn:disabled::before{display:none;}
+
+        @media(max-width:900px){.login-left{display:none;}.login-right{width:100%;min-width:unset;}.nav-typing{display:none;}}
+    </style>
+</head>
+<body>
+    <div class="bg-canvas"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
+    <div class="particles" id="particles"></div>
+    <div class="grid-lines"></div>
+    <div class="grain"></div>
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <header>
+        <div class="header-inner">
+            <div class="header-left">
+                <div class="header-logo"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+                <span style="font-size:16px;font-weight:600;">LAZARUS</span>
+            </div>
+            <div class="nav-typing">
+                <span class="prompt">$</span>
+                <span id="navTyped"></span>
+                <span class="nav-cursor"></span>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <!-- LEFT: slides -->
+        <div class="login-left">
+            <div class="slide-container">
+                <div class="slide active" data-slide="0">
+                    <div class="slide-eyebrow" style="color:var(--success);">AI-Powered CMS</div>
+                    <h1 class="slide-title">Build websites with<br>artificial intelligence</h1>
+                    <p class="slide-desc">Describe your website in natural language and watch it come to life. One prompt, full site.</p>
+                    <div class="slide-pills">
+                        <div class="pill pill-green"><span class="pill-icon">+</span> No setup fee</div>
+                        <div class="pill pill-blue"><span class="pill-icon">*</span> Instant deploy</div>
+                        <div class="pill pill-purple"><span class="pill-icon">#</span> Private by default</div>
+                    </div>
+                </div>
+                <div class="slide" data-slide="1">
+                    <div class="slide-eyebrow" style="color:#3b82f6;">Privacy First</div>
+                    <h1 class="slide-title">Your data stays<br>on your server</h1>
+                    <p class="slide-desc">Ghost Mode ensures your prompts are never stored. Zero-retention by design.</p>
+                    <div class="slide-pills">
+                        <div class="pill pill-blue"><span class="pill-icon">*</span> Zero-retention</div>
+                        <div class="pill pill-purple"><span class="pill-icon">#</span> Self-hosted</div>
+                    </div>
+                </div>
+                <div class="slide" data-slide="2">
+                    <div class="slide-eyebrow" style="color:#a78bfa;">Smart Generation</div>
+                    <h1 class="slide-title">One prompt,<br>complete website</h1>
+                    <p class="slide-desc">HTML, CSS, and JavaScript generated automatically. Preview instantly.</p>
+                    <div class="slide-pills">
+                        <div class="pill pill-green"><span class="pill-icon">+</span> HTML + CSS + JS</div>
+                        <div class="pill pill-blue"><span class="pill-icon">*</span> Auto-validated</div>
+                    </div>
+                </div>
+                <div class="slide" data-slide="3">
+                    <div class="slide-eyebrow" style="color:#f59e0b;">Pay As You Go</div>
+                    <h1 class="slide-title">No subscriptions.<br>Just tokens.</h1>
+                    <p class="slide-desc">Top up your balance and pay only for what you use.</p>
+                    <div class="slide-pills">
+                        <div class="pill pill-blue"><span class="pill-icon">*</span> No subscription</div>
+                        <div class="pill pill-green"><span class="pill-icon">+</span> Real-time billing</div>
+                    </div>
+                </div>
+                <div class="slide-dots">
+                    <div class="slide-dot active" data-idx="0"></div>
+                    <div class="slide-dot" data-idx="1"></div>
+                    <div class="slide-dot" data-idx="2"></div>
+                    <div class="slide-dot" data-idx="3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: login form -->
+        <div class="login-right">
+            <div class="login-box">
+                <div class="login-header">
+                    <h2>Sign in to LAZARUS</h2>
+                    <p>Your account: sites, settings, API key.</p>
+                </div>
+                {% if error %}
+                <div class="error-msg">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    {{ error }}
+                </div>
+                {% endif %}
+                <form class="login-form" method="POST">
+                    <div class="form-group">
+                        <label class="form-label">Username<span class="req">*</span></label>
+                        <div class="input-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <input type="text" name="username" class="form-input" placeholder="ali" required autocomplete="username">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password<span class="req">*</span></label>
+                        <div class="input-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <input type="password" name="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+                        </div>
+                    </div>
+                    <div class="security-check" id="secCheck"><div style="text-align:center"><div class="spinner"></div><div>Loading security check...</div></div></div>
+                    <button type="submit" class="submit-btn" id="submitBtn" disabled>Sign in</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Particles
+        for(let i=0;i<50;i++){const p=document.createElement('div');p.className='particle';p.style.left=Math.random()*100+'%';p.style.animationDuration=(Math.random()*15+10)+'s';p.style.animationDelay=(Math.random()*15)+'s';p.style.width=p.style.height=(Math.random()*3+1)+'px';p.style.opacity=Math.random()*0.5+0.1;document.getElementById('particles').appendChild(p);}
+
+        // Cursor glow
+        document.addEventListener('mousemove',e=>{const g=document.getElementById('cursorGlow');g.style.left=e.clientX+'px';g.style.top=e.clientY+'px';});
+
+        // Security check
+        setTimeout(()=>{document.getElementById('secCheck').innerHTML='<div style="text-align:center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><div style="color:#22c55e;margin-top:4px">Security check passed</div></div>';document.getElementById('submitBtn').disabled=false;},2500);
+
+        // Nav typing
+        const navPhrases=['pip install lazarus-cms','lazarus --host 0.0.0.0','build "landing page"','deploy --instant'];
+        const navEl=document.getElementById('navTyped');let nI=0,nC=0,nD=false;
+        function navType(){const c=navPhrases[nI];if(!nD){navEl.textContent=c.substring(0,nC+1);nC++;if(nC===c.length){nD=true;setTimeout(()=>{nD=false;nC=0;nI=(nI+1)%navPhrases.length;navType();},2000);return;}setTimeout(navType,60+Math.random()*30);}else{navEl.textContent=c.substring(0,nC-1);nC--;if(nC===0){nD=false;nI=(nI+1)%navPhrases.length;setTimeout(navType,400);return;}setTimeout(navType,20);}}
+        setTimeout(navType,1000);
+
+        // Slide carousel
+        let curSlide=0;const slides=document.querySelectorAll('.slide');const dots=document.querySelectorAll('.slide-dot');
+        function goTo(i){slides[curSlide].classList.remove('active');dots[curSlide].classList.remove('active');curSlide=i;slides[curSlide].classList.add('active');dots[curSlide].classList.add('active');}
+        dots.forEach(d=>d.addEventListener('click',()=>goTo(parseInt(d.dataset.idx))));
+        setInterval(()=>goTo((curSlide+1)%slides.length),4000);
+    </script>
+</body>
+</html>

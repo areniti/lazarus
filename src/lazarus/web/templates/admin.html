@@ -1,22 +1,151 @@
 {% extends "base.html" %}
-{% block title %}خانه - LAZARUS{% endblock %}
+{% block title %}Dashboard — LAZARUS{% endblock %}
+
 {% block content %}
-<h1>📁 سایت من</h1>
+<style>
+    .dash { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+    .dash-welcome { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; opacity: 0; animation: fU .6s ease-out .1s forwards; }
+    @keyframes fU { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    .dash-welcome h1 { font-size: 1.75rem; font-weight: 700; }
+    .dash-welcome p { font-size: 0.875rem; color: var(--text-muted); margin-top: 4px; }
+    .dash-welcome .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 9999px; background: linear-gradient(135deg, var(--brand-500), var(--brand-700)); color: white; font-size: 0.875rem; font-weight: 600; text-decoration: none; transition: all 0.3s; }
+    .dash-welcome .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(99,102,241,0.4); }
+    .dash-welcome .btn svg { width: 16px; height: 16px; }
 
-{% for site in sites %}
-<div class="card" style="display:flex;justify-content:space-between;align-items:center;">
-    <div>
-        <strong>{{ site.name }}</strong>
-        <span class="text-muted" style="margin-right:10px;">({{ (site.size/1024)|round(1) }}KB)</span>
+    .dash-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; opacity: 0; animation: fU .6s ease-out .2s forwards; }
+    .stat-card { background: rgba(30,30,40,0.6); backdrop-filter: blur(12px); border: 1px solid rgba(99,102,241,0.15); border-radius: 14px; padding: 1.25rem; transition: all 0.3s; }
+    .stat-card:hover { border-color: rgba(99,102,241,0.4); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(99,102,241,0.15); }
+    .stat-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+    .stat-card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .stat-card-icon svg { width: 18px; height: 18px; }
+    .stat-card-icon.green { background: rgba(34,197,94,0.12); color: #22c55e; }
+    .stat-card-icon.blue { background: rgba(59,130,246,0.12); color: #3b82f6; }
+    .stat-card-icon.purple { background: rgba(139,92,246,0.12); color: #a78bfa; }
+    .stat-card-icon.amber { background: rgba(245,158,11,0.12); color: #f59e0b; }
+    .stat-card-badge { font-size: 0.6875rem; padding: 2px 8px; border-radius: 9999px; font-weight: 600; }
+    .stat-card-badge.active { background: rgba(34,197,94,0.12); color: #22c55e; }
+    .stat-card-value { font-size: 1.5rem; font-weight: 700; margin-bottom: 2px; }
+    .stat-card-label { font-size: 0.75rem; color: var(--text-subtle); }
+
+    .dash-grid { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; opacity: 0; animation: fU .6s ease-out .3s forwards; }
+    .dash-section { background: rgba(30,30,40,0.6); backdrop-filter: blur(12px); border: 1px solid rgba(99,102,241,0.15); border-radius: 14px; padding: 1.5rem; }
+    .dash-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .dash-section-title { font-size: 0.9375rem; font-weight: 600; }
+    .dash-section-badge { font-size: 0.6875rem; padding: 2px 8px; border-radius: 9999px; background: var(--surface-3); color: var(--text-muted); }
+
+    .dash-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; text-align: center; }
+    .dash-empty-icon { width: 56px; height: 56px; border-radius: 14px; background: var(--surface-3); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+    .dash-empty-icon svg { width: 24px; height: 24px; color: var(--text-subtle); }
+    .dash-empty h3 { font-size: 0.875rem; font-weight: 600; margin-bottom: 4px; }
+    .dash-empty p { font-size: 0.75rem; color: var(--text-subtle); margin-bottom: 1rem; }
+    .dash-empty .btn-sm { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; background: var(--brand-500); color: white; font-size: 0.75rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+    .dash-empty .btn-sm:hover { background: var(--brand-700); }
+
+    .dash-actions { display: flex; flex-direction: column; gap: 0.75rem; }
+    .dash-action { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; text-decoration: none; color: var(--text-main); transition: all 0.3s; }
+    .dash-action:hover { border-color: var(--primary); transform: translateX(4px); }
+    .dash-action-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .dash-action-icon svg { width: 20px; height: 20px; }
+    .dash-action-icon.indigo { background: rgba(99,102,241,0.12); color: #818cf8; }
+    .dash-action-icon.green { background: rgba(34,197,94,0.12); color: #22c55e; }
+    .dash-action-icon.blue { background: rgba(59,130,246,0.12); color: #3b82f6; }
+    .dash-action-icon.amber { background: rgba(245,158,11,0.12); color: #f59e0b; }
+    .dash-action-text h3 { font-size: 0.8125rem; font-weight: 600; margin-bottom: 2px; }
+    .dash-action-text p { font-size: 0.6875rem; color: var(--text-subtle); }
+    .dash-action-arrow { margin-left: auto; color: var(--text-subtle); }
+    .dash-action-arrow svg { width: 16px; height: 16px; }
+
+    .dash-activity { margin-top: 1.5rem; }
+    .activity-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .activity-dot.green { background: #22c55e; }
+    .activity-dot.blue { background: #3b82f6; }
+    .activity-text { font-size: 0.75rem; color: var(--text-muted); }
+    .activity-text strong { color: var(--text-main); font-weight: 500; }
+    .activity-time { font-size: 0.6875rem; color: var(--text-subtle); margin-left: auto; white-space: nowrap; }
+
+    @media (max-width: 900px) { .dash-grid { grid-template-columns: 1fr; } .dash-stats { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .dash { padding: 1rem; } .dash-stats { grid-template-columns: 1fr 1fr; } }
+</style>
+
+<div class="dash">
+    <div class="dash-welcome">
+        <div>
+            <h1>Welcome back, {{ session.get('user', 'Admin') }}</h1>
+            <p>Manage your AI-powered websites from one place.</p>
+        </div>
+        <a href="/admin/chat" class="btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            New Chat
+        </a>
     </div>
-    <a href="{{ url_for('preview', filename=site.file) }}" target="_blank" class="btn btn-sm">👁️ مشاهده</a>
-</div>
-{% endfor %}
 
-{% if not sites %}
-<div class="card text-center">
-    <p class="text-muted">هنوز سایتی ساخته نشده</p>
-    <a href="/admin/chat" class="btn mt-1">💬 شروع چت</a>
+    <div class="dash-stats">
+        <div class="stat-card">
+            <div class="stat-card-header"><div class="stat-card-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><span class="stat-card-badge active">Ready</span></div>
+            <div class="stat-card-value">Online</div>
+            <div class="stat-card-label">Server Status</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header"><div class="stat-card-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div></div>
+            <div class="stat-card-value">{{ sites|length }}</div>
+            <div class="stat-card-label">Sites Built</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header"><div class="stat-card-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div></div>
+            <div class="stat-card-value">AI</div>
+            <div class="stat-card-label">Engine</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header"><div class="stat-card-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div></div>
+            <div class="stat-card-value">v5.8</div>
+            <div class="stat-card-label">Version</div>
+        </div>
+    </div>
+
+    <div class="dash-grid">
+        <div class="dash-section">
+            <div class="dash-section-header"><span class="dash-section-title">My Sites</span><span class="dash-section-badge">{{ sites|length }} total</span></div>
+            {% if sites %}
+                {% for site in sites %}
+                <a href="/preview/{{ site.file }}" style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;text-decoration:none;color:var(--text-main);transition:all .3s;" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--border)'">
+                    <div style="width:36px;height:36px;border-radius:8px;background:var(--surface-3);display:flex;align-items:center;justify-content:center;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--primary)"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    </div>
+                    <div><div style="font-size:0.8125rem;font-weight:600;">{{ site.name }}</div><div style="font-size:0.6875rem;color:var(--text-subtle);">{{ site.size }} bytes</div></div>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:var(--text-subtle);margin-left:auto;"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="dash-empty">
+                    <div class="dash-empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+                    <h3>No sites yet</h3>
+                    <p>Describe your website in chat and AI will build it.</p>
+                    <a href="/admin/chat" class="btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Start Chat</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:1.5rem;">
+            <div class="dash-section">
+                <div class="dash-section-header"><span class="dash-section-title">Quick Actions</span></div>
+                <div class="dash-actions">
+                    <a href="/admin/chat" class="dash-action"><div class="dash-action-icon indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="dash-action-text"><h3>Open Chat</h3><p>Build sites with AI</p></div><span class="dash-action-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span></a>
+                    <a href="/admin/settings" class="dash-action"><div class="dash-action-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div><div class="dash-action-text"><h3>Settings</h3><p>Account & preferences</p></div><span class="dash-action-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span></a>
+                    <a href="/admin/settings/api" class="dash-action"><div class="dash-action-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div><div class="dash-action-text"><h3>API Config</h3><p>Set up your AI provider</p></div><span class="dash-action-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span></a>
+                    <a href="/logout" class="dash-action"><div class="dash-action-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div><div class="dash-action-text"><h3>Sign Out</h3><p>Exit your session</p></div><span class="dash-action-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></span></a>
+                </div>
+            </div>
+            <div class="dash-section">
+                <div class="dash-section-header"><span class="dash-section-title">Recent Activity</span></div>
+                <div class="dash-activity">
+                    <div class="activity-item"><div class="activity-dot green"></div><span class="activity-text">Server <strong>started</strong></span><span class="activity-time">just now</span></div>
+                    <div class="activity-item"><div class="activity-dot blue"></div><span class="activity-text">User <strong>{{ session.get('user', 'Admin') }}</strong> logged in</span><span class="activity-time">just now</span></div>
+                    <div class="activity-item"><div class="activity-dot" style="background:#a78bfa;"></div><span class="activity-text">Lazarus <strong>v5.8.0</strong> ready</span><span class="activity-time">ready</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-{% endif %}
 {% endblock %}

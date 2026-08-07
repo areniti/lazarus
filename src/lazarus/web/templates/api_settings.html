@@ -1,168 +1,188 @@
 {% extends "base.html" %}
-{% block title %}API - LAZARUS{% endblock %}
+{% block title %}API Settings — LAZARUS{% endblock %}
+
 {% block content %}
-<h1>🌐 مدیریت API</h1>
+<style>
+    .settings{padding:2rem;max-width:1000px;margin:0 auto;}
+    .settings-header{margin-bottom:2rem;opacity:0;animation:fU .6s ease-out .1s forwards;}
+    @keyframes fU{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    .settings-header h1{font-size:1.75rem;font-weight:700;margin-bottom:4px;}
+    .settings-header p{font-size:0.875rem;color:var(--text-muted);}
 
-<div class="card">
-    <h3>➕ مدل جدید اضافه کن</h3>
-    <input type="text" id="new_name" placeholder="نام (مثلاً: OpenCode)">
-    <input type="text" id="new_url" placeholder="Base URL (مثلاً: https://opencode.ai/zen/v1)">
-    <input type="text" id="new_key" placeholder="API Key">
-    <div style="display:flex;gap:8px;margin-top:8px;">
-        <button class="btn btn-blue" onclick="fetchModels()">🔍 دریافت مدل‌ها</button>
-        <button class="btn" onclick="addModel()">💾 ذخیره مدل</button>
+    .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;opacity:0;animation:fU .6s ease-out .2s forwards;}
+    .settings-card{background:rgba(30,30,40,0.6);backdrop-filter:blur(12px);border:1px solid rgba(99,102,241,0.15);border-radius:14px;padding:1.5rem;transition:all .3s;}
+    .settings-card:hover{border-color:rgba(99,102,241,0.3);}
+    .settings-card.full{grid-column:1/-1;}
+    .settings-card h3{font-size:0.9375rem;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+    .settings-card h3 svg{width:18px;height:18px;color:var(--primary);}
+
+    .form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+    .form-label{font-size:0.75rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;}
+    .form-input{width:100%;padding:10px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;color:var(--text-main);font-size:14px;font-family:'Space Grotesk',sans-serif;outline:none;transition:all .2s;}
+    .form-input::placeholder{color:var(--text-subtle);}
+    .form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(59,130,246,0.12);}
+    .form-row{display:flex;gap:8px;}
+    .form-row .form-group{flex:1;}
+
+    .btn{padding:10px 18px;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:0.8125rem;font-weight:600;cursor:pointer;transition:all .2s;border:none;display:inline-flex;align-items:center;gap:6px;}
+    .btn-primary{background:linear-gradient(135deg,var(--brand-500),var(--brand-700));color:white;}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(99,102,241,0.3);}
+    .btn-secondary{background:var(--surface-3);color:var(--text-main);border:1px solid var(--border);}
+    .btn-secondary:hover{border-color:var(--primary);}
+    .btn-danger{background:rgba(239,68,68,0.1);color:var(--danger);border:1px solid rgba(239,68,68,0.2);}
+    .btn-danger:hover{background:rgba(239,68,68,0.2);}
+    .btn-sm{padding:6px 12px;font-size:0.75rem;}
+
+    .status-msg{padding:10px 14px;border-radius:10px;font-size:0.8125rem;margin-top:8px;display:flex;align-items:center;gap:8px;}
+    .status-msg.success{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);color:var(--success);}
+    .status-msg.error{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:var(--danger);}
+    .status-msg.loading{background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);color:var(--info);}
+
+    .model-list{display:flex;flex-direction:column;gap:6px;max-height:400px;overflow-y:auto;}
+    .model-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;transition:all .2s;flex-wrap:wrap;}
+    .model-item:hover{border-color:var(--primary);}
+    .model-name{font-size:0.8125rem;font-weight:600;font-family:'JetBrains Mono',monospace;}
+    .model-url{font-size:0.6875rem;color:var(--text-subtle);margin-top:2px;font-family:'JetBrains Mono',monospace;}
+    .model-actions{display:flex;gap:4px;}
+    .model-result{width:100%;margin-top:8px;padding:8px 12px;border-radius:8px;font-size:0.75rem;font-family:'JetBrains Mono',monospace;word-break:break-all;}
+    .model-result.success{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);color:var(--success);}
+    .model-result.error{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:var(--danger);}
+    .model-result.loading{background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);color:var(--info);}
+
+    .empty-state{text-align:center;padding:2rem;color:var(--text-subtle);font-size:0.8125rem;}
+
+    @media(max-width:768px){.settings-grid{grid-template-columns:1fr;}.form-row{flex-direction:column;}}
+</style>
+
+<div class="settings" dir="ltr" style="direction:ltr;text-align:left">
+    <div class="settings-header">
+        <h1>API Settings</h1>
+        <p>Configure your AI provider and manage models.</p>
     </div>
-    <div id="status" class="mt-1"></div>
-</div>
 
-<div class="card" id="fetched_section" style="display:none;">
-    <h3>📋 مدل‌های موجود</h3>
-    <input type="text" id="search_fetched" placeholder="جستجو..." oninput="filterFetched()" style="margin-bottom:12px;">
-    <div id="fetched_list"></div>
-</div>
+    <div class="settings-grid">
+        <!-- Add Model -->
+        <div class="settings-card">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Model</h3>
+            <div class="form-group">
+                <label class="form-label">Name</label>
+                <input type="text" id="new_name" class="form-input" placeholder="e.g. OpenCode">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Base URL</label>
+                <input type="text" id="new_url" class="form-input" placeholder="https://api.example.com/v1">
+            </div>
+            <div class="form-group">
+                <label class="form-label">API Key</label>
+                <input type="password" id="new_key" class="form-input" placeholder="sk-...">
+            </div>
+            <div class="form-row">
+                <button class="btn btn-secondary" onclick="fetchModels()" style="flex:1;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Fetch Models
+                </button>
+                <button class="btn btn-primary" onclick="addModel()" style="flex:1;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save Model
+                </button>
+            </div>
+            <div id="status"></div>
+        </div>
 
-<div class="card">
-    <h3>💾 مدل‌های ذخیره شده</h3>
-    <input type="text" id="search_saved" placeholder="جستجو..." oninput="filterSaved()" style="margin-bottom:12px;">
-    <div id="saved_list"></div>
+        <!-- Active Model -->
+        <div class="settings-card">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Active Model</h3>
+            <div id="activeModelInfo" style="padding:1rem;background:var(--surface-2);border-radius:10px;border:1px solid var(--border);">
+                <div style="font-size:0.75rem;color:var(--text-subtle);margin-bottom:4px;">CURRENT MODEL</div>
+                <div id="activeModelName" style="font-size:1rem;font-weight:600;font-family:'JetBrains Mono',monospace;">Loading...</div>
+                <div id="activeModelUrl" style="font-size:0.75rem;color:var(--text-subtle);margin-top:4px;font-family:'JetBrains Mono',monospace;"></div>
+            </div>
+            <div style="margin-top:12px;">
+                <button class="btn btn-secondary" onclick="loadActiveModel()" style="width:100%;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Fetched Models -->
+        <div class="settings-card full" id="fetched_section" style="display:none;">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Available Models</h3>
+            <div class="form-group" style="margin-bottom:12px;">
+                <input type="text" id="search_fetched" class="form-input" placeholder="Search models..." oninput="filterFetched()">
+            </div>
+            <div class="model-list" id="fetched_list"></div>
+        </div>
+
+        <!-- Saved Models -->
+        <div class="settings-card full">
+            <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Saved Models</h3>
+            <div class="form-group" style="margin-bottom:12px;">
+                <input type="text" id="search_saved" class="form-input" placeholder="Search saved models..." oninput="filterSaved()">
+            </div>
+            <div class="model-list" id="saved_list"></div>
+        </div>
+    </div>
 </div>
 
 <script>
-let fetchedModels = [];
-let filteredFetched = [];
-let savedModels = [];
+let fetchedModels=[], filteredFetched=[], savedModels=[];
 
-function fetchModels() {
-    const url = document.getElementById('new_url').value;
-    const key = document.getElementById('new_key').value;
-    const status = document.getElementById('status');
-    if (!url || !key) { status.innerHTML = '<span class="error">URL و Key الزامیه</span>'; return; }
-    status.innerHTML = '⏳ در حال دریافت...';
-    fetch('/api/fetch-models', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({api_url:url, api_key:key})})
+function fetchModels(){
+    const url=document.getElementById('new_url').value;
+    const key=document.getElementById('new_key').value;
+    const st=document.getElementById('status');
+    if(!url||!key){st.innerHTML='<div class="status-msg error">URL and Key are required</div>';return;}
+    st.innerHTML='<div class="status-msg loading">Fetching models...</div>';
+    fetch('/api/fetch-models',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_url:url,api_key:key})})
     .then(r=>r.json()).then(d=>{
-        if (d.models && d.models.length > 0) {
-            fetchedModels = d.models;
-            filteredFetched = d.models.slice();
-            renderFetched();
-            document.getElementById('fetched_section').style.display = 'block';
-            status.innerHTML = '<span class="success">✅ ' + d.models.length + ' مدل پیدا شد</span>';
-        } else {
-            status.innerHTML = '<span class="error">❌ ' + (d.error || 'مدلی پیدا نشد') + '</span>';
-        }
+        if(d.models&&d.models.length>0){fetchedModels=d.models;filteredFetched=d.models.slice();renderFetched();document.getElementById('fetched_section').style.display='block';st.innerHTML='<div class="status-msg success">Found '+d.models.length+' models</div>';}
+        else{st.innerHTML='<div class="status-msg error">'+(d.error||'No models found')+'</div>';}
     });
 }
+function renderFetched(){const box=document.getElementById('fetched_list');if(!filteredFetched.length){box.innerHTML='<div class="empty-state">No models found</div>';return;}box.innerHTML=filteredFetched.map(m=>'<div class="model-item"><div><div class="model-name">'+m+'</div></div><div class="model-actions"><button class="btn btn-primary btn-sm" onclick="selectFetchedModel(\''+m.replace(/'/g,"\\'")+'\')">Select</button></div></div>').join('');}
+function filterFetched(){const q=document.getElementById('search_fetched').value.toLowerCase();filteredFetched=fetchedModels.filter(m=>m.toLowerCase().includes(q));renderFetched();}
+function selectFetchedModel(n){document.getElementById('new_name').value=n;document.getElementById('status').innerHTML='<div class="status-msg success">Selected: '+n+'</div>';window.scrollTo({top:0,behavior:'smooth'});}
 
-function renderFetched() {
-    const box = document.getElementById('fetched_list');
-    if (!filteredFetched.length) { box.innerHTML = '<p class="text-muted">مدلی پیدا نشد</p>'; return; }
-    box.innerHTML = filteredFetched.map((m,i) => `
-        <div style="padding:8px 12px;border-bottom:1px solid #30363d;display:flex;justify-content:space-between;align-items:center;">
-            <span>${m}</span>
-            <button class="btn btn-sm" onclick="selectFetchedModel('${m.replace(/'/g,"\\'")}')">✅ انتخاب</button>
-        </div>
-    `).join('');
-}
-
-function filterFetched() {
-    const q = document.getElementById('search_fetched').value.toLowerCase();
-    filteredFetched = fetchedModels.filter(m => m.toLowerCase().includes(q));
-    renderFetched();
-}
-
-function selectFetchedModel(name) {
-    document.getElementById('new_name').value = name;
-    document.getElementById('status').innerHTML = '<span class="success">✅ انتخاب شد: ' + name + '</span>';
-    window.scrollTo({top: 0, behavior: 'smooth'});
-}
-
-function addModel() {
-    const name = document.getElementById('new_name').value;
-    const url = document.getElementById('new_url').value;
-    const key = document.getElementById('new_key').value;
-    const status = document.getElementById('status');
-    if (!name || !url || !key) { status.innerHTML = '<span class="error">همه فیلدها الزامیه</span>'; return; }
-    fetch('/api/add-model', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, url, key})})
+function addModel(){
+    const n=document.getElementById('new_name').value,u=document.getElementById('new_url').value,k=document.getElementById('new_key').value;
+    const st=document.getElementById('status');
+    if(!n||!u||!k){st.innerHTML='<div class="status-msg error">All fields are required</div>';return;}
+    fetch('/api/add-model',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,url:u,key:k})})
     .then(r=>r.json()).then(d=>{
-        if (d.ok) {
-            status.innerHTML = '<span class="success">✅ ذخیره شد: ' + name + '</span>';
-            document.getElementById('new_name').value = '';
-            loadSaved();
-        } else {
-            status.innerHTML = '<span class="error">❌ ' + d.error + '</span>';
-        }
+        if(d.ok){st.innerHTML='<div class="status-msg success">Saved: '+n+'</div>';document.getElementById('new_name').value='';loadSaved();}
+        else{st.innerHTML='<div class="status-msg error">'+d.error+'</div>';}
     });
 }
 
-function loadSaved() {
-    fetch('/api/models-list').then(r=>r.json()).then(d=>{
-        savedModels = d.models || [];
-        renderSaved();
+function loadSaved(){fetch('/api/models-list').then(r=>r.json()).then(d=>{savedModels=d.models||[];renderSaved();});}
+function renderSaved(){const box=document.getElementById('saved_list');if(!savedModels.length){box.innerHTML='<div class="empty-state">No saved models</div>';return;}box.innerHTML=savedModels.map((m,i)=>'<div class="model-item"><div style="flex:1;min-width:0;"><div class="model-name">'+m.name+'</div><div class="model-url">'+m.url+'</div><div class="model-result" id="model-result-'+i+'" style="display:none;"></div></div><div class="model-actions"><button class="btn btn-secondary btn-sm" onclick="testSaved('+i+')">Test</button><button class="btn btn-primary btn-sm" onclick="useSaved('+i+')">Use</button><button class="btn btn-danger btn-sm" onclick="removeSaved('+i+')">Delete</button></div></div>').join('');}
+function filterSaved(){const q=document.getElementById('search_saved').value.toLowerCase();const f=savedModels.filter(m=>m.name.toLowerCase().includes(q)||m.url.toLowerCase().includes(q));const box=document.getElementById('saved_list');if(!f.length){box.innerHTML='<div class="empty-state">No results</div>';return;}box.innerHTML=f.map(m=>{const i=savedModels.indexOf(m);return '<div class="model-item"><div style="flex:1;min-width:0;"><div class="model-name">'+m.name+'</div><div class="model-url">'+m.url+'</div><div class="model-result" id="model-result-'+i+'" style="display:none;"></div></div><div class="model-actions"><button class="btn btn-secondary btn-sm" onclick="testSaved('+i+')">Test</button><button class="btn btn-primary btn-sm" onclick="useSaved('+i+')">Use</button><button class="btn btn-danger btn-sm" onclick="removeSaved('+i+')">Delete</button></div></div>';}).join('');}
+
+function testSaved(i){
+    const m=savedModels[i];
+    const el=document.getElementById('model-result-'+i);
+    if(!el){return;}
+    el.className='model-result loading';el.textContent='Testing '+m.name+'...';el.style.display='block';
+    fetch('/api/test-model',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_url:m.url,api_key:m.key,model:m.name})}).then(r=>r.json()).then(d=>{
+        el.className=d.ok?'model-result success':'model-result error';
+        el.textContent=d.ok?'OK: '+d.response:d.error;
     });
 }
-
-function renderSaved() {
-    const box = document.getElementById('saved_list');
-    if (!savedModels.length) { box.innerHTML = '<p class="text-muted">مدلی ذخیره نشده</p>'; return; }
-    box.innerHTML = savedModels.map((m,i) => `
-        <div style="padding:12px;border-bottom:1px solid #30363d;display:flex;justify-content:space-between;align-items:center;">
-            <div>
-                <strong>${m.name}</strong><br>
-                <span class="text-muted" style="font-size:12px;">${m.url}</span>
-            </div>
-            <div style="display:flex;gap:6px;">
-                <button class="btn btn-sm btn-blue" onclick="testSaved(${i})">🧪 تست</button>
-                <button class="btn btn-sm" onclick="useSaved(${i})">✅ فعال کردن</button>
-                <button class="btn btn-sm btn-red" onclick="removeSaved(${i})">🗑️</button>
-            </div>
-        </div>
-    `).join('');
-}
-
-function filterSaved() {
-    const q = document.getElementById('search_saved').value.toLowerCase();
-    const filtered = savedModels.filter(m => m.name.toLowerCase().includes(q) || m.url.toLowerCase().includes(q));
-    const box = document.getElementById('saved_list');
-    if (!filtered.length) { box.innerHTML = '<p class="text-muted">چیزی پیدا نشد</p>'; return; }
-    box.innerHTML = filtered.map((m) => {
-        const realIndex = savedModels.indexOf(m);
-        return `
-        <div style="padding:12px;border-bottom:1px solid #30363d;display:flex;justify-content:space-between;align-items:center;">
-            <div>
-                <strong>${m.name}</strong><br>
-                <span class="text-muted" style="font-size:12px;">${m.url}</span>
-            </div>
-            <div style="display:flex;gap:6px;">
-                <button class="btn btn-sm btn-blue" onclick="testSaved(${realIndex})">🧪 تست</button>
-                <button class="btn btn-sm" onclick="useSaved(${realIndex})">✅ فعال کردن</button>
-                <button class="btn btn-sm btn-red" onclick="removeSaved(${realIndex})">🗑️</button>
-            </div>
-        </div>`;
-    }).join('');
-}
-
-function testSaved(i) {
-    const m = savedModels[i];
-    const status = document.getElementById('status');
-    status.innerHTML = '⏳ تست ' + m.name + '...';
-    fetch('/api/test-model', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({api_url:m.url, api_key:m.key, model:m.name})})
-    .then(r=>r.json()).then(d=>{
-        status.innerHTML = d.ok ? '<span class="success">✅ ' + m.name + ': ' + d.response + '</span>' : '<span class="error">❌ ' + d.error + '</span>';
+function useSaved(i){
+    const m=savedModels[i];
+    const el=document.getElementById('model-result-'+i);
+    if(!el){return;}
+    el.className='model-result loading';el.textContent='Activating '+m.name+'...';el.style.display='block';
+    fetch('/api/save-api',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_url:m.url,api_key:m.key,api_model:m.name})}).then(r=>r.json()).then(d=>{
+        el.className=d.ok?'model-result success':'model-result error';
+        el.textContent=d.ok?'Activated: '+m.name:d.error;
+        loadActiveModel();
     });
 }
+function removeSaved(i){fetch('/api/remove-model',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({index:i})}).then(r=>r.json()).then(()=>loadSaved());}
+function loadActiveModel(){fetch('/api/models-list').then(r=>r.json()).then(d=>{const m=d.models||[];if(m.length>0){document.getElementById('activeModelName').textContent=m[0].name;document.getElementById('activeModelUrl').textContent=m[0].url;}else{document.getElementById('activeModelName').textContent='No model configured';document.getElementById('activeModelUrl').textContent='';}});}
 
-function useSaved(i) {
-    const m = savedModels[i];
-    fetch('/api/save-api', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({api_url:m.url, api_key:m.key, api_model:m.name})})
-    .then(r=>r.json()).then(d=>{
-        document.getElementById('status').innerHTML = d.ok ? '<span class="success">✅ فعال شد: ' + m.name + '</span>' : '<span class="error">❌ ' + d.error + '</span>';
-    });
-}
-
-function removeSaved(i) {
-    fetch('/api/remove-model', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({index:i})})
-    .then(r=>r.json()).then(()=>loadSaved());
-}
-
-loadSaved();
+loadSaved();loadActiveModel();
 </script>
 {% endblock %}

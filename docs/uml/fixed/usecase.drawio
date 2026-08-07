@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-08-05T00:00:00.000Z" agent="Hermes Agent" version="21.0.0" type="device">
+  <diagram id="usecase-lazarus-cms" name="Use Case Diagram">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- ==================== SYSTEM BOUNDARY ==================== -->
+        <mxCell id="system" value="&#x645;&#x627;&#x644;&#x6A9; &#x644;&#x627;&#x632;&#x627;&#x631;&#x648;&#x633; CMS" style="shape=mxgraph.basic.rect;fillColor=none;strokeColor=#1a1a2e;strokeWidth=3;dashed=1;dashPattern=5 5;fontSize=20;fontStyle=1;fontColor=#1a1a2e;verticalAlign=top;align=center;spacingTop=15;" vertex="1" parent="1">
+          <mxGeometry x="350" y="50" width="900" height="750" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ACTORS ==================== -->
+
+        <!-- Guest Actor (مهمان) -->
+        <mxCell id="actor_guest" value="&#x645;&#x647;&#x645;&#x627;&#x646;&#x200C;&#x635;&#x648;&#x631;&#x62A;&#x6CC;" style="shape=actor;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1;fontColor=#2c3e50;fillColor=#ecf0f1;strokeColor=#2c3e50;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="100" y="280" width="120" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- Admin Actor (مدیر) -->
+        <mxCell id="actor_admin" value="&#x645;&#x62F;&#x6CC;&#x631;&#x200C;&#x633;&#x627;&#x645;&#x627;&#x646;&#x647;" style="shape=actor;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1;fontColor=#2c3e50;fillColor=#3498db;strokeColor=#2c3e50;strokeWidth=2;fillOpacity=30;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="280" width="120" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- AI Model Actor (مدل هوش مصنوعی) -->
+        <mxCell id="actor_ai" value="&#x645;&#x62F;&#x644; &#x647;&#x648;&#x634; &#x645;&#x635;&#x646;&#x648;&#x639;&#x6CC;" style="shape=actor;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1;fontColor=#8e44ad;fillColor=#9b59b6;strokeColor=#8e44ad;strokeWidth=2;fillOpacity=30;" vertex="1" parent="1">
+          <mxGeometry x="1380" y="580" width="120" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== USE CASES ==================== -->
+
+        <!-- UC1: View Site -->
+        <mxCell id="uc1" value="&#x645;&#x634;&#x627;&#x647;&#x62F;&#x647; &#x633;&#x627;&#x6CC;&#x62A;" style="ellipse;whiteSpace=wrap;html=1;fontSize=13;fontColor=#1a1a2e;fillColor=#f1c40f;strokeColor=#d4ac0d;strokeWidth=2;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="120" width="220" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- UC2: Login -->
+        <mxCell id="uc2" value="&#x648;&#x631;&#x648;&#x62F;" style="ellipse;whiteSpace=wrap;html=1;fontSize=13;fontColor=#1a1a2e;fillColor=#2ecc71;strokeColor=#27ae60;strokeWidth=2;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="250" width="220" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- UC3: Chat with AI -->
+        <mxCell id="uc3" value="&#x6AF;&#x641;&#x62A;&#x6AF;&#x648; &#x628;&#x627; &#x647;&#x648;&#x634; &#x645;&#x635;&#x646;&#x648;&#x639;&#x6CC;" style="ellipse;whiteSpace=wrap;html=1;fontSize=13;fontColor=#ffffff;fillColor=#8e44ad;strokeColor=#7d3c98;strokeWidth=2;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="380" width="220" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- UC4: Build Website -->
+        <mxCell id="uc4" value="&#x633;&#x627;&#x62E;&#x62A; &#x648;&#x628;&#x633;&#x627;&#x6CC;&#x62A;" style="ellipse;whiteSpace=wrap;html=1;fontSize=13;fontColor=#ffffff;fillColor=#e74c3c;strokeColor=#c0392b;strokeWidth=2;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="510" width="220" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- UC5: Edit Website -->
+        <mxCell id="uc5" value="&#x648;&#x6CC;&#x631;&#x627;&#x6CC;&#x634; &#x648;&#x628;&#x633;&#x627;&#x6CC;&#x62A;" style="ellipse;whiteSpace=wrap;html=1;fontSize=13;fontColor=#1a1a2e;fillColor=#e67e22;strokeColor=#d35400;strokeWidth=2;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="450" y="640" width="220" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- UC6: View Preview -->
+        <mxCell id="uc6" value="&#x645;&#x634;&#x627;&#x647;&#x62F;&#x647; &#x67E;&#x6CC;&#x634;&#x646;&#x645;&#x627;&#x6CC;&#x634;" style="ellipse;whiteSpace=wrap;html=1;fontSize=13;fontColor=#1a1a2e;fillColor=#1abc9c;strokeColor=#16a085;strokeWidth=2;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="750" y="580" width="220" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- UC7: Manage Settings -->
+        <mxCell id="uc7" value="&#x645;&#x62F;&#x6CC;&#x631;&#x6CC;&#x62A; &#x62A;&#x646;&#x638;&#x6CC;&#x645;&#x627;&#x62A;" style="ellipse;whiteSpace=wrap;html=1;fontSize=13;fontColor=#1a1a2e;fillColor=#3498db;strokeColor=#2980b9;strokeWidth=2;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="820" y="250" width="220" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- UC8: Change Password -->
+        <mxCell id="uc8" value="&#x62A;&#x63A;&#x6CC;&#x6CC;&#x631; &#x631;&#x645;&#x632; &#x639;&#x628;&#x648;&#x631;" style="ellipse;whiteSpace=wrap;html=1;fontSize=13;fontColor=#1a1a2e;fillColor=#95a5a6;strokeColor=#7f8c8d;strokeWidth=2;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="820" y="380" width="220" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- UC9: Configure API -->
+        <mxCell id="uc9" value="&#x67E;&#x6CC;&#x6A9;&#x631;&#x628;&#x646;&#x62F;&#x6CC; API" style="ellipse;whiteSpace=wrap;html=1;fontSize=13;fontColor=#ffffff;fillColor=#2c3e50;strokeColor=#1a252f;strokeWidth=2;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="820" y="510" width="220" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- UC10: Fetch Models -->
+        <mxCell id="uc10" value="&#x62F;&#x631;&#x6CC;&#x627;&#x641;&#x62A; &#x645;&#x62F;&#x644;&#x200C;&#x647;&#x627;" style="ellipse;whiteSpace=wrap;html=1;fontSize=13;fontColor=#ffffff;fillColor=#8e44ad;strokeColor=#7d3c98;strokeWidth=2;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="820" y="640" width="220" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- UC11: Test Model -->
+        <mxCell id="uc11" value="&#x622;&#x632;&#x645;&#x627;&#x6CC;&#x634; &#x645;&#x62F;&#x644;" style="ellipse;whiteSpace=wrap;html=1;fontSize=13;fontColor=#ffffff;fillColor=#c0392b;strokeColor=#a93226;strokeWidth=2;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="820" y="730" width="220" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== SUB-USE CASES (Build) ==================== -->
+
+        <!-- SubUC: Classify -->
+        <mxCell id="subuc1" value="&#x62A;&#x635;&#x646;&#x6CC;&#x641; &#x62F;&#x631;&#x62E;&#x648;&#x627;&#x633;&#x62A;" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontColor=#c0392b;fillColor=#fadbd8;strokeColor=#e74c3c;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="490" width="160" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- SubUC: Decompose -->
+        <mxCell id="subuc2" value="&#x62A;&#x62D;&#x644;&#x6CC;&#x644; &#x628;&#x647; &#x62C;&#x632;&#x622;&#x628;&#x647;" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontColor=#c0392b;fillColor=#fadbd8;strokeColor=#e74c3c;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="560" width="160" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- SubUC: Generate CSS/JS/HTML -->
+        <mxCell id="subuc3" value="&#x62A;&#x648;&#x644;&#x6CC;&#x62F; CSS/JS/HTML" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontColor=#c0392b;fillColor=#fadbd8;strokeColor=#e74c3c;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="630" width="160" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- SubUC: Validate -->
+        <mxCell id="subuc4" value="&#x627;&#x631;&#x632;&#x634; &#x62F;&#x631;&#x633;&#x62A;&#x6CC;" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontColor=#c0392b;fillColor=#fadbd8;strokeColor=#e74c3c;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="700" width="160" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- SubUC: Save -->
+        <mxCell id="subuc5" value="&#x630;&#x62E;&#x6CC;&#x631;&#x647;" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fontColor=#c0392b;fillColor=#fadbd8;strokeColor=#e74c3c;strokeWidth=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="130" y="770" width="160" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== RELATIONSHIPS ==================== -->
+
+        <!-- Guest → View Site -->
+        <mxCell id="rel1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2c3e50;strokeWidth=2;" edge="1" source="actor_guest" target="uc1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Guest → Login -->
+        <mxCell id="rel2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2c3e50;strokeWidth=2;" edge="1" source="actor_guest" target="uc2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Guest → Chat with AI -->
+        <mxCell id="rel3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2c3e50;strokeWidth=2;" edge="1" source="actor_guest" target="uc3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Guest → Build Website -->
+        <mxCell id="rel4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2c3e50;strokeWidth=2;" edge="1" source="actor_guest" target="uc4" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Admin → Edit Website -->
+        <mxCell id="rel5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2c3e50;strokeWidth=2;" edge="1" source="actor_admin" target="uc5" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Admin → Manage Settings -->
+        <mxCell id="rel6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2c3e50;strokeWidth=2;" edge="1" source="actor_admin" target="uc7" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Admin → Change Password -->
+        <mxCell id="rel7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2c3e50;strokeWidth=2;" edge="1" source="actor_admin" target="uc8" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Admin → Configure API -->
+        <mxCell id="rel8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2c3e50;strokeWidth=2;" edge="1" source="actor_admin" target="uc9" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Admin → Fetch Models -->
+        <mxCell id="rel9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2c3e50;strokeWidth=2;" edge="1" source="actor_admin" target="uc10" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Admin → Test Model -->
+        <mxCell id="rel10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2c3e50;strokeWidth=2;" edge="1" source="actor_admin" target="uc11" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- AI Model → Chat with AI -->
+        <mxCell id="rel11" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8e44ad;strokeWidth=2;dashed=1;" edge="1" source="actor_ai" target="uc3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- AI Model → Build Website -->
+        <mxCell id="rel12" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8e44ad;strokeWidth=2;dashed=1;" edge="1" source="actor_ai" target="uc4" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- AI Model → Fetch Models -->
+        <mxCell id="rel13" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8e44ad;strokeWidth=2;dashed=1;" edge="1" source="actor_ai" target="uc10" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- AI Model → Test Model -->
+        <mxCell id="rel14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#8e44ad;strokeWidth=2;dashed=1;" edge="1" source="actor_ai" target="uc11" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== INCLUDE / EXTEND RELATIONSHIPS ==================== -->
+
+        <!-- Login «include» Change Password -->
+        <mxCell id="inc1" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;dashed=1;fontSize=11;fontStyle=2;fontColor=#e74c3c;" edge="1" source="uc2" target="uc8" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Manage Settings «include» Configure API -->
+        <mxCell id="inc2" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;dashed=1;fontSize=11;fontStyle=2;fontColor=#e74c3c;" edge="1" source="uc7" target="uc9" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Manage Settings «include» Fetch Models -->
+        <mxCell id="inc3" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;dashed=1;fontSize=11;fontStyle=2;fontColor=#e74c3c;" edge="1" source="uc7" target="uc10" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Manage Settings «include» Test Model -->
+        <mxCell id="inc4" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;dashed=1;fontSize=11;fontStyle=2;fontColor=#e74c3c;" edge="1" source="uc7" target="uc11" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Edit Website «extends» Build Website -->
+        <mxCell id="ext1" value="&lt;&lt;extends&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f39c12;strokeWidth=2;dashed=1;dashPattern=8 4;fontSize=11;fontStyle=2;fontColor=#f39c12;" edge="1" source="uc5" target="uc4" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Build Website «includes» View Preview -->
+        <mxCell id="inc5" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;dashed=1;fontSize=11;fontStyle=2;fontColor=#e74c3c;" edge="1" source="uc4" target="uc6" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== BUILD WEBSITE DECOMPOSITION (include) ==================== -->
+
+        <!-- Build → Classify -->
+        <mxCell id="build1" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;dashed=1;dashPattern=3 3;fontSize=9;fontStyle=2;fontColor=#e74c3c;" edge="1" source="uc4" target="subuc1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Build → Decompose -->
+        <mxCell id="build2" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;dashed=1;dashPattern=3 3;fontSize=9;fontStyle=2;fontColor=#e74c3c;" edge="1" source="uc4" target="subuc2" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Build → Generate -->
+        <mxCell id="build3" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;dashed=1;dashPattern=3 3;fontSize=9;fontStyle=2;fontColor=#e74c3c;" edge="1" source="uc4" target="subuc3" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Build → Validate -->
+        <mxCell id="build4" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;dashed=1;dashPattern=3 3;fontSize=9;fontStyle=2;fontColor=#e74c3c;" edge="1" source="uc4" target="subuc4" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Build → Save -->
+        <mxCell id="build5" value="&lt;&lt;include&gt;&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#e74c3c;strokeWidth=1;dashed=1;dashPattern=3 3;fontSize=9;fontStyle=2;fontColor=#e74c3c;" edge="1" source="uc4" target="subuc5" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== LEGEND ==================== -->
+        <mxCell id="legend_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdf2e9;strokeColor=#d35400;strokeWidth=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="900" width="380" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend_title" value="&#x62A;&#x648;&#x636;&#x6CC;&#x62D; (Legend)" style="text;html=1;fontSize=14;fontStyle=1;fontColor=#d35400;align=center;" vertex="1" parent="1">
+          <mxGeometry x="170" y="905" width="140" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend1" value="&#x627;&#x631;&#x62A;&#x628;&#x627;&#x637; &#x645;&#x633;&#x62A;&#x642;&#x6CC;&#x645; = &#x627;&#x631;&#x62A;&#x628;&#x627;&#x637; &#x645;&#x627;&#x644;&#x6A9; (&#x627;&#x62C;&#x631;&#x627;&#x6CC;)" style="text;html=1;fontSize=11;fontColor=#7f8c8d;align=left;" vertex="1" parent="1">
+          <mxGeometry x="70" y="940" width="300" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend2" value="&#x627;&#x631;&#x62A;&#x628;&#x627;&#x637; &#x637;&#x631;&#x641; = &#x627;&#x631;&#x62A;&#x628;&#x627;&#x637; &#x647;&#x648;&#x634; &#x645;&#x635;&#x646;&#x648;&#x639;&#x6CC; (&#x627;&#x62C;&#x631;&#x627;&#x6CC;)" style="text;html=1;fontSize=11;fontColor=#7f8c8d;align=left;" vertex="1" parent="1">
+          <mxGeometry x="70" y="965" width="300" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend3" value="&lt;&lt;include&gt;&gt; = &#x627;&#x637;&#x644;&#x627;&#x642;&#x627;&#x62A;&#x6CC; (&#x627;&#x62C;&#x631;&#x627;&#x6CC; &#x627;&#x635;&#x644;&#x6CC;" style="text;html=1;fontSize=11;fontColor=#e74c3c;align=left;" vertex="1" parent="1">
+          <mxGeometry x="70" y="990" width="300" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend4" value="&lt;&lt;extends&gt;&gt; = &#x62A;&#x648;&#x633;&#x6CC;&#x639; (&#x627;&#x62C;&#x631;&#x627;&#x6CC; &#x627;&#x635;&#x644;&#x6CC;" style="text;html=1;fontSize=11;fontColor=#f39c12;align=left;" vertex="1" parent="1">
+          <mxGeometry x="70" y="1015" width="300" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="legend5" value="&#x627;&#x637;&#x644;&#x627;&#x642;&#x627;&#x62A; &#x62C;&#x632;&#x626;&#x6CC; (&#x62F;&#x631; &#x633;&#x627;&#x62E;&#x62A; &#x648;&#x628;&#x633;&#x627;&#x6CC;&#x62A;): &#x62A;&#x635;&#x646;&#x6CC;&#x641; &#x62F;&#x631;&#x62E;&#x648;&#x627;&#x633;&#x62A; / &#x62A;&#x62D;&#x644;&#x6CC;&#x644; / &#x62A;&#x648;&#x644;&#x6CC;&#x62F; / &#x627;&#x631;&#x632;&#x634; / &#x630;&#x62E;&#x6CC;&#x631;&#x647;" style="text;html=1;fontSize=10;fontColor=#c0392b;align=left;" vertex="1" parent="1">
+          <mxGeometry x="70" y="1040" width="340" height="35" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

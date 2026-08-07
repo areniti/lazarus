@@ -1,57 +1,123 @@
 {% extends "base.html" %}
-{% block title %}تنظیمات - LAZARUS{% endblock %}
+{% block title %}Settings — LAZARUS{% endblock %}
+
 {% block content %}
-<h1>⚙️ تنظیمات</h1>
+<style>
+    .settings{padding:2rem;max-width:800px;margin:0 auto;}
+    .settings-header{margin-bottom:2rem;opacity:0;animation:fU .6s ease-out .1s forwards;}
+    @keyframes fU{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    .settings-header h1{font-size:1.75rem;font-weight:700;margin-bottom:4px;}
+    .settings-header p{font-size:0.875rem;color:var(--text-muted);}
 
-<!-- تغییر پسورد -->
-<div class="card">
-    <h3>🔐 تغییر پسورد</h3>
-    <input type="password" id="old_pass" placeholder="پسورد فعلی">
-    <input type="password" id="new_pass" placeholder="پسورد جدید">
-    <input type="password" id="new_pass2" placeholder="تکرار پسورد جدید">
-    <button class="btn" onclick="changePassword()">ذخیره پسورد</button>
-    <div id="pass_status" class="mt-1"></div>
-</div>
+    .settings-card{background:rgba(30,30,40,0.6);backdrop-filter:blur(12px);border:1px solid rgba(99,102,241,0.15);border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;transition:all .3s;opacity:0;animation:fU .6s ease-out forwards;}
+    .settings-card:nth-child(2){animation-delay:.2s;}
+    .settings-card:nth-child(3){animation-delay:.3s;}
+    .settings-card:nth-child(4){animation-delay:.4s;}
+    .settings-card:hover{border-color:rgba(99,102,241,0.3);}
+    .settings-card h3{font-size:0.9375rem;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+    .settings-card h3 svg{width:18px;height:18px;color:var(--primary);}
 
-<!-- تغییر یوزرنیم -->
-<div class="card">
-    <h3>👤 تغییر یوزرنیم</h3>
-    <input type="password" id="user_pass" placeholder="پسورد فعلی">
-    <input type="text" id="new_user" placeholder="یوزرنیم جدید">
-    <button class="btn" onclick="changeUsername()">ذخیره یوزرنیم</button>
-    <div id="user_status" class="mt-1"></div>
-</div>
+    .form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+    .form-label{font-size:0.75rem;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;}
+    .form-input{width:100%;padding:10px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;color:var(--text-main);font-size:14px;font-family:'Space Grotesk',sans-serif;outline:none;transition:all .2s;}
+    .form-input::placeholder{color:var(--text-subtle);}
+    .form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(59,130,246,0.12);}
 
-<!-- تنظیمات API -->
-<div class="card">
-    <h3>🌐 تنظیمات API</h3>
-    <a href="/admin/settings/api" class="btn btn-blue">مدیریت API و مدل‌ها →</a>
+    .btn{padding:10px 18px;border-radius:10px;font-family:'Space Grotesk',sans-serif;font-size:0.8125rem;font-weight:600;cursor:pointer;transition:all .2s;border:none;display:inline-flex;align-items:center;gap:6px;}
+    .btn-primary{background:linear-gradient(135deg,var(--brand-500),var(--brand-700));color:white;}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(99,102,241,0.3);}
+    .btn-secondary{background:var(--surface-3);color:var(--text-main);border:1px solid var(--border);}
+    .btn-secondary:hover{border-color:var(--primary);}
+
+    .status-msg{padding:10px 14px;border-radius:10px;font-size:0.8125rem;margin-top:8px;display:flex;align-items:center;gap:8px;}
+    .status-msg.success{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);color:var(--success);}
+    .status-msg.error{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:var(--danger);}
+
+    .settings-link{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;text-decoration:none;color:var(--text-main);transition:all .2s;}
+    .settings-link:hover{border-color:var(--primary);transform:translateX(4px);}
+    .settings-link-text h3{font-size:0.8125rem;font-weight:600;margin-bottom:2px;}
+    .settings-link-text p{font-size:0.6875rem;color:var(--text-subtle);}
+    .settings-link svg{width:16px;height:16px;color:var(--text-subtle);}
+
+    @media(max-width:640px){.settings{padding:1rem;}}
+</style>
+
+<div class="settings">
+    <div class="settings-header">
+        <h1>Settings</h1>
+        <p>Manage your account and preferences.</p>
+    </div>
+
+    <!-- Change Password -->
+    <div class="settings-card">
+        <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Change Password
+        </h3>
+        <div class="form-group">
+            <label class="form-label">Current Password</label>
+            <input type="password" id="old_pass" class="form-input" placeholder="Enter current password">
+        </div>
+        <div class="form-group">
+            <label class="form-label">New Password</label>
+            <input type="password" id="new_pass" class="form-input" placeholder="Min 8 characters" minlength="8">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" id="new_pass2" class="form-input" placeholder="Repeat new password">
+        </div>
+        <button class="btn btn-primary" onclick="changePassword()">Save Password</button>
+        <div id="pass_status"></div>
+    </div>
+
+    <!-- Change Username -->
+    <div class="settings-card">
+        <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Change Username
+        </h3>
+        <div class="form-group">
+            <label class="form-label">Current Password</label>
+            <input type="password" id="user_pass" class="form-input" placeholder="Enter password to confirm">
+        </div>
+        <div class="form-group">
+            <label class="form-label">New Username</label>
+            <input type="text" id="new_user" class="form-input" placeholder="Min 2 characters">
+        </div>
+        <button class="btn btn-primary" onclick="changeUsername()">Save Username</button>
+        <div id="user_status"></div>
+    </div>
+
+    <!-- API Settings Link -->
+    <div class="settings-card" style="padding:0;">
+        <a href="/admin/settings/api" class="settings-link">
+            <div class="settings-link-text">
+                <h3>API & Models</h3>
+                <p>Configure AI provider and manage models</p>
+            </div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </a>
+    </div>
 </div>
 
 <script>
-function changePassword() {
-    const old_pass = document.getElementById('old_pass').value;
-    const new_pass = document.getElementById('new_pass').value;
-    const new_pass2 = document.getElementById('new_pass2').value;
-    const status = document.getElementById('pass_status');
-    if (new_pass !== new_pass2) { status.innerHTML = '<span class="error">پسورد جدید مطابقت ندارد</span>'; return; }
-    if (new_pass.length < 8) { status.innerHTML = '<span class="error">پسورد حداقل ۸ کاراکتر</span>'; return; }
-    fetch('/api/save-password', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({old_password:old_pass, new_password:new_pass})})
-    .then(r=>r.json()).then(d=>{
-        if(d.ok) status.innerHTML = '<span class="success">✅ پسورد ذخیره شد</span>';
-        else status.innerHTML = '<span class="error">❌ ' + d.error + '</span>';
+function changePassword(){
+    const o=document.getElementById('old_pass').value,n=document.getElementById('new_pass').value,n2=document.getElementById('new_pass2').value;
+    const st=document.getElementById('pass_status');
+    if(n!==n2){st.innerHTML='<div class="status-msg error">Passwords do not match</div>';return;}
+    if(n.length<8){st.innerHTML='<div class="status-msg error">Password must be at least 8 characters</div>';return;}
+    fetch('/api/save-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({old_password:o,new_password:n})}).then(r=>r.json()).then(d=>{
+        st.innerHTML=d.ok?'<div class="status-msg success">Password updated</div>':'<div class="status-msg error">'+d.error+'</div>';
+        if(d.ok){document.getElementById('old_pass').value='';document.getElementById('new_pass').value='';document.getElementById('new_pass2').value='';}
     });
 }
-
-function changeUsername() {
-    const pass = document.getElementById('user_pass').value;
-    const new_user = document.getElementById('new_user').value;
-    const status = document.getElementById('user_status');
-    if (new_user.length < 2) { status.innerHTML = '<span class="error">یوزرنیم حداقل ۲ کاراکتر</span>'; return; }
-    fetch('/api/save-username', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pass, new_username:new_user})})
-    .then(r=>r.json()).then(d=>{
-        if(d.ok) status.innerHTML = '<span class="success">✅ یوزرنیم ذخیره شد</span>';
-        else status.innerHTML = '<span class="error">❌ ' + d.error + '</span>';
+function changeUsername(){
+    const p=document.getElementById('user_pass').value,u=document.getElementById('new_user').value;
+    const st=document.getElementById('user_status');
+    if(u.length<2){st.innerHTML='<div class="status-msg error">Username must be at least 2 characters</div>';return;}
+    fetch('/api/save-username',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:p,new_username:u})}).then(r=>r.json()).then(d=>{
+        st.innerHTML=d.ok?'<div class="status-msg success">Username updated</div>':'<div class="status-msg error">'+d.error+'</div>';
+        if(d.ok)document.getElementById('new_user').value='';
     });
 }
 </script>
